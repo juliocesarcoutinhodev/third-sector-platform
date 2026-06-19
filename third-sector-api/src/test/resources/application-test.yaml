@@ -8,7 +8,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,env,beans,mappings
+        include: health,info,env,beans,mappings,prometheus
   endpoint:
     health:
       show-details: always

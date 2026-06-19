@@ -174,6 +174,7 @@ A exposição dos endpoints varia por perfil — endpoints sensíveis ficam fech
 | `GET /actuator/beans` | ✅ | ❌ 404 |
 | `GET /actuator/mappings` | ✅ | ❌ 404 |
 | `GET /actuator/metrics` | ✅ | ❌ 404 |
+| `GET /actuator/prometheus` | ✅ | ❌ 404 |
 
 ### Resposta de exemplo
 
@@ -204,3 +205,34 @@ A exposição dos endpoints varia por perfil — endpoints sensíveis ficam fech
 ```
 
 A versão em `build.version` é populada automaticamente pelo Maven via o goal `build-info` do plugin Spring Boot.
+
+### Prometheus
+
+O endpoint `/actuator/prometheus` expõe métricas no formato Prometheus (JVM, HTTP requests, connection pool, etc.).
+
+O Prometheus local sobe junto com a infra via Docker Compose e já está configurado para fazer scrape da API em `host.docker.internal:8080`. A UI fica disponível em http://localhost:9090.
+
+Queries úteis para validar:
+```promql
+up
+http_server_requests_seconds_count
+jvm_memory_used_bytes
+hikaricp_connections_active
+```
+
+Todas as métricas carregam a label `application="third-sector-api"` para facilitar filtros em ambientes com múltiplos serviços.
+
+### Grafana
+
+O Grafana sobe junto com a infra e já contém o datasource Prometheus e o dashboard **Third Sector API — Overview** provisionados automaticamente — sem nenhuma configuração manual na UI.
+
+| Painel | Métrica |
+|---|---|
+| JVM Heap Memory | Uso e limite da heap por geração |
+| CPU Usage | CPU do processo e do sistema |
+| HTTP Request Rate | Taxa de requisições por endpoint/status |
+| HTTP Latency p99 / p50 | Percentis de latência por endpoint |
+| HikariCP Connections | Conexões ativas, idle e pending |
+| HTTP 5xx Error Rate | Taxa de erros 5xx por endpoint |
+
+Acesse http://localhost:3000 (credenciais do `infra/.env`).
