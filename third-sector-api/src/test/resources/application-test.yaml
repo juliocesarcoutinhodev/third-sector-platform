@@ -1,0 +1,43 @@
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,beans,mappings
+  endpoint:
+    health:
+      show-details: always
+
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+  flyway:
+    locations: classpath:db/migration
+  mail:
+    host: localhost
+    port: 1025
+    username: test@thirdsector.local
+    password: ''
+
+security:
+  jwt:
+    secret: test-secret-key-for-testing-only-must-be-at-least-256-bits-long-here
+    expiration: 86400000
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+  bucket: third-sector-test
+
+logging:
+  level:
+    root: WARN
+    br.com.toponesystem: WARN
