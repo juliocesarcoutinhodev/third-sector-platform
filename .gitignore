@@ -1,0 +1,20 @@
+# Env files — nunca commitar, somente *.example
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Targets e builds
+**/target/
+**/build/
+**/.gradle/
+
+# IDEs
+**/.idea/
+**/.vscode/
+**/*.iml
+**/*.iws
+**/*.ipr
+
+# OS
+.DS_Store
+Thumbs.db
