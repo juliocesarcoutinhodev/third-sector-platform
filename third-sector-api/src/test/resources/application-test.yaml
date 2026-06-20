@@ -37,6 +37,12 @@ minio:
   secret-key: minioadmin
   bucket: third-sector-test
 
+tenant:
+  header-fallback-enabled: true
+  known-tenants:
+    - maringa
+    - londrina
+
 logging:
   level:
     root: WARN

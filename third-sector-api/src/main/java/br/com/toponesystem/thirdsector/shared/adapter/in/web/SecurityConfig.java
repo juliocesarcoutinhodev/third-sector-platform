@@ -1,4 +1,4 @@
-package br.com.toponesystem.thirdsector.shared.config;
+package br.com.toponesystem.thirdsector.shared.adapter.in.web;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,6 +1,7 @@
 # Third Sector API
 
-API REST do sistema de gestão para organizações do terceiro setor, construída com Spring Boot 4 e arquitetura modular.
+API REST do sistema de gestão para organizações do terceiro setor, construída com Spring Boot 4,
+arquitetura hexagonal + Clean Architecture e modularização via Spring Modulith.
 
 ## Stack
 
@@ -18,18 +19,128 @@ API REST do sistema de gestão para organizações do terceiro setor, construíd
 | Testes | JUnit 5 + Testcontainers |
 | Arquitetura modular | Spring Modulith |
 
+## Arquitetura
+
+Cada módulo segue arquitetura hexagonal + Clean Architecture leve, com três camadas:
+
+```
+municipality/
+├── domain/                    ← entidades, value objects, portas (sem dependência de frameworks)
+│   ├── Municipality.java
+│   ├── Plan.java
+│   ├── DuplicateSubdomainException.java
+│   ├── MunicipalityNotFoundException.java
+│   └── port/out/
+│       └── MunicipalityRepository.java     ← porta de saída (interface)
+├── application/               ← casos de uso (um por classe)
+│   ├── RegisterMunicipalityUseCase.java
+│   ├── FindMunicipalityBySubdomainUseCase.java
+│   ├── FindMunicipalityByIdUseCase.java
+│   ├── ListActiveMunicipalitiesUseCase.java
+│   └── MunicipalityView.java              ← DTO de saída
+├── adapter/                   ← dependem de domain/application, nunca o contrário
+│   ├── in/web/
+│   │   ├── MunicipalityController.java    ← controller fino, só delega aos use cases
+│   │   └── RegisterMunicipalityRequest.java ← DTO de entrada com validação
+│   └── out/persistence/
+│       ├── MunicipalityEntity.java        ← entidade JPA
+│       ├── MunicipalityPersistenceAdapter.java ← implementa a porta
+│       └── SpringDataMunicipalityRepository.java
+└── package-info.java          ← @ApplicationModule
+```
+
+### Regras de arquitetura
+
+- **Domínio nunca depende de Spring, JPA ou qualquer framework.** Apenas Java puro.
+- **Um caso de uso = uma classe** para lógica não trivial. Operações CRUD simples podem usar `*Service`,
+  mas o padrão é use case.
+- **Comunicação entre módulos**: Spring `ApplicationEvent` / `@ApplicationModuleListener`,
+  `@NamedInterface` para chamadas diretas, ou Kafka para durabilidade/retry.
+- **Shared é um módulo OPEN** — todos os módulos podem importar dele livremente.
+  Contém exceções base, wrappers de resposta (`ApiResponse`, `ErrorResponse`, `PageResponse`)
+  e o `GlobalExceptionHandler`.
+
 ## Módulos
 
 ```
 br.com.toponesystem.thirdsector
-├── auth            # Autenticação e autorização (JWT)
-├── tenant          # Gestão de tenants (multi-tenant)
-├── municipality    # Municípios e dados públicos
-├── organization    # Organizações do terceiro setor
-├── financial       # Gestão financeira
-├── notification    # Notificações (e-mail, push)
-├── transparency    # Portal de transparência
-└── shared          # Utilitários e componentes compartilhados
+├── shared/                ← módulo OPEN: exceções base, ErrorResponse, GlobalExceptionHandler
+│   ├── domain/exception/  ← BusinessException, ConflictException, ResourceNotFoundException
+│   └── adapter/in/web/    ← ApiResponse, ErrorResponse, PageResponse, GlobalExceptionHandler
+├── tenant/                ← multi-tenancy (schema-per-tenant, TenantFilter, migrações)
+├── municipality/          ← cadastro de municípios (CRUD completo com hexagonal)
+├── auth/                  ← stub
+├── organization/          ← stub
+├── financial/             ← stub
+├── notification/          ← stub
+└── transparency/          ← stub
+```
+
+## Respostas da API
+
+### Sucesso — `ApiResponse<T>`
+
+Toda resposta de sucesso é envelopada em `ApiResponse<T>`:
+
+```json
+{
+  "success": true,
+  "message": "Município cadastrado com sucesso.",
+  "data": {
+    "id": 1,
+    "name": "Maringá",
+    "cnpj": "11222333000181",
+    "subdomain": "maringa",
+    "plan": "BASIC",
+    "active": true,
+    "createdAt": "2026-06-20T20:00:00Z",
+    "updatedAt": "2026-06-20T20:00:00Z"
+  }
+}
+```
+
+### Erro — `ErrorResponse`
+
+Erros são tratados exclusivamente pelo `GlobalExceptionHandler` (`@RestControllerAdvice`).
+**Controllers nunca** tratam exceções — apenas lançam. O handler mapeia exceções tipadas
+para `ErrorResponse` com HTTP status apropriado.
+
+**Hierarquia de exceções:**
+
+```
+RuntimeException
+├── ResourceNotFoundException  (shared) → 404
+│   └── MunicipalityNotFoundException (municipality)
+├── ConflictException          (shared) → 409
+│   └── DuplicateSubdomainException (municipality)
+├── BusinessException          (shared) → 422
+└── Exception                  → 500
+```
+
+**Exemplo 404:**
+```json
+{
+  "success": false,
+  "status": 404,
+  "error": "Not Found",
+  "message": "Municipality with subdomain 'x' not found",
+  "timestamp": "2026-06-20T20:00:00Z"
+}
+```
+
+**Exemplo 400 — validação:**
+```json
+{
+  "success": false,
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Erro de validação.",
+  "errors": [
+    {"field": "cnpj", "message": "invalid Brazilian taxpayer registry number"},
+    {"field": "subdomain", "message": "must contain only lowercase letters, numbers, and hyphens"}
+  ],
+  "timestamp": "2026-06-20T20:00:00Z"
+}
 ```
 
 ## Pré-requisitos
@@ -57,7 +168,8 @@ Aguarde todos os serviços aparecerem como `healthy`:
 docker compose ps
 ```
 
-A API lê as variáveis automaticamente de `../infra/.env` no perfil `dev` — não é necessário nenhum `.env` dentro desta pasta.
+A API lê as variáveis automaticamente de `../infra/.env` no perfil `dev`
+— não é necessário nenhum `.env` dentro desta pasta.
 
 ### 2. Rodar a aplicação
 
@@ -77,19 +189,24 @@ A aplicação sobe em `http://localhost:8080` com o perfil `dev`.
 
 ## Variáveis de ambiente
 
-Todas as credenciais sensíveis são injetadas via variáveis de ambiente — nenhum valor sensível é hardcoded.
+Todas as credenciais sensíveis são injetadas via variáveis de ambiente
+— nenhum valor sensível é hardcoded.
 
 Consulte `../infra/.env.example` para a lista completa e documentada.
 
 ## Schema e migrações
 
-O schema do banco é versionado pelo Flyway. As migrations ficam em `src/main/resources/db/migration/`.
+O schema do banco é versionado pelo Flyway. As migrations são separadas por escopo:
 
-| Versão | Descrição |
+| Pasta | Schemas gerenciados |
 |---|---|
-| V1 | Criação do schema `master` (cross-tenant: municípios, planos, configurações globais) |
+| `db/migration/master` | Schema `master` (dados cross-tenant: municípios, planos, config) |
+| `db/migration/tenant` | Schemas individuais de cada município (dados operacionais) |
 
-Para inspecionar o histórico de migrações aplicadas:
+No startup, o `TenantMigrationStartupRunner` aplica as migrations do master e depois
+itera sobre todos os municípios ativos aplicando as migrations nos schemas tenant.
+
+Para inspecionar o histórico de migrações:
 
 ```sql
 SELECT * FROM flyway_schema_history ORDER BY installed_rank;
@@ -97,29 +214,32 @@ SELECT * FROM flyway_schema_history ORDER BY installed_rank;
 
 ## Arquitetura modular
 
-Os limites entre módulos são verificados automaticamente pelo Spring Modulith. Para rodar a verificação estrutural:
+Os limites entre módulos são verificados automaticamente pelo Spring Modulith.
+Para rodar a verificação estrutural:
 
 ```bash
 ./mvnw test -Dtest=ModularityTests
 ```
 
-A documentação gerada (diagramas C4) fica em `target/spring-modulith-docs/` após rodar `writeDocumentation()`.
+A documentação gerada (diagramas C4) fica em `target/spring-modulith-docs/`
+após rodar `writeDocumentation()`.
 
 ## Logs estruturados
 
-Nos perfis `dev` e `prod`, os logs são emitidos em JSON (formato logstash). Cada linha inclui:
+Nos perfis `dev` e `prod`, os logs são emitidos em JSON (formato logstash).
+Cada linha inclui:
 
 - `@timestamp`, `level`, `logger`, `message`
 - `requestId` — UUID único por requisição HTTP
-- `tenantId` — identificador da prefeitura (populado pelo TenantFilter a partir do Épico 1)
+- `tenantId` — identificador da prefeitura (populado pelo TenantFilter)
 
-Exemplo de saída:
+Exemplo:
 
 ```json
 {
-  "@timestamp": "2026-06-19T14:00:00.000Z",
+  "@timestamp": "2026-06-20T14:00:00.000Z",
   "level": "INFO",
-  "logger": "br.com.toponesystem.thirdsector.shared.config.EnvFileLogger",
+  "logger": "br.com.toponesystem.thirdsector.shared.adapter.in.web.EnvFileLogger",
   "message": "Loaded environment from: \"../infra/.env\"",
   "requestId": "a1b2c3d4-...",
   "tenantId": ""
@@ -145,20 +265,26 @@ Em `prod` ambos os endpoints retornam 404 — a documentação não é exposta p
 ./mvnw test -Dtest=ModularityTests
 ```
 
-Os testes de integração rodam contra uma instância real do PostgreSQL via container efêmero (Testcontainers). Não é necessário ter o `docker-compose` da pasta `infra/` rodando.
+Os testes de integração rodam contra uma instância real do PostgreSQL via container efêmero
+(Testcontainers). Não é necessário ter o `docker-compose` da pasta `infra/` rodando.
 
 ### Classe base de integração
 
-`AbstractIntegrationTest` é a classe base para todos os testes que precisam de banco de dados real. Ela declara o container PostgreSQL como `static`, garantindo que **um único container é compartilhado** por toda a suíte — não há reinicialização entre classes de teste.
+`AbstractIntegrationTest` é a classe base para todos os testes que precisam de banco de dados real.
+Ela declara o container PostgreSQL como `static`, garantindo que **um único container é compartilhado**
+por toda a suíte — não há reinicialização entre classes de teste.
 
 ```java
-class MinhaIntegrationTest extends AbstractIntegrationTest {
+class MeuTesteDeIntegracao extends AbstractIntegrationTest {
     @Test
     void meuTeste() { ... }
 }
 ```
 
-O container sobe na primeira vez que qualquer classe que estende `AbstractIntegrationTest` é carregada, e é destruído automaticamente ao final da suíte. As propriedades `spring.datasource.*` são injetadas dinamicamente via `@DynamicPropertySource`, isolando completamente o ambiente de testes do ambiente de desenvolvimento.
+O container sobe na primeira vez que qualquer classe que estende `AbstractIntegrationTest`
+é carregada, e é destruído automaticamente ao final da suíte. As propriedades
+`spring.datasource.*` são injetadas dinamicamente via `@DynamicPropertySource`,
+isolando completamente o ambiente de testes do ambiente de desenvolvimento.
 
 ## Observabilidade
 
@@ -168,51 +294,23 @@ A exposição dos endpoints varia por perfil — endpoints sensíveis ficam fech
 
 | Endpoint | `dev` / `test` | `prod` |
 |---|---|---|
-| `GET /actuator/health` | ✅ detalhes completos | ✅ status apenas |
-| `GET /actuator/info` | ✅ | ✅ |
-| `GET /actuator/env` | ✅ | ❌ 404 |
-| `GET /actuator/beans` | ✅ | ❌ 404 |
-| `GET /actuator/mappings` | ✅ | ❌ 404 |
-| `GET /actuator/metrics` | ✅ | ❌ 404 |
-| `GET /actuator/prometheus` | ✅ | ❌ 404 |
-
-### Resposta de exemplo
-
-**`GET /actuator/health`** (dev):
-```json
-{
-  "status": "UP",
-  "components": {
-    "db": { "status": "UP" },
-    "diskSpace": { "status": "UP" },
-    "ping": { "status": "UP" }
-  }
-}
-```
-
-**`GET /actuator/info`**:
-```json
-{
-  "app": {
-    "description": "API de gestão para organizações do terceiro setor"
-  },
-  "build": {
-    "artifact": "third-sector-api",
-    "version": "0.0.1-SNAPSHOT",
-    "time": "2026-06-19T15:00:00Z"
-  }
-}
-```
-
-A versão em `build.version` é populada automaticamente pelo Maven via o goal `build-info` do plugin Spring Boot.
+| `GET /actuator/health` | detalhes completos | status apenas |
+| `GET /actuator/info` | sim | sim |
+| `GET /actuator/env` | sim | nao |
+| `GET /actuator/beans` | sim | nao |
+| `GET /actuator/mappings` | sim | nao |
+| `GET /actuator/metrics` | sim | nao |
+| `GET /actuator/prometheus` | sim | nao |
 
 ### Prometheus
 
-O endpoint `/actuator/prometheus` expõe métricas no formato Prometheus (JVM, HTTP requests, connection pool, etc.).
+O endpoint `/actuator/prometheus` expõe métricas no formato Prometheus
+(JVM, HTTP requests, connection pool, etc.).
 
-O Prometheus local sobe junto com a infra via Docker Compose e já está configurado para fazer scrape da API em `host.docker.internal:8080`. A UI fica disponível em http://localhost:9090.
+O Prometheus local sobe junto com a infra via Docker Compose e já está configurado
+para fazer scrape da API em `host.docker.internal:8080`. A UI fica em http://localhost:9090.
 
-Queries úteis para validar:
+Queries úteis:
 ```promql
 up
 http_server_requests_seconds_count
@@ -220,11 +318,10 @@ jvm_memory_used_bytes
 hikaricp_connections_active
 ```
 
-Todas as métricas carregam a label `application="third-sector-api"` para facilitar filtros em ambientes com múltiplos serviços.
-
 ### Grafana
 
-O Grafana sobe junto com a infra e já contém o datasource Prometheus e o dashboard **Third Sector API — Overview** provisionados automaticamente — sem nenhuma configuração manual na UI.
+O Grafana sobe junto com a infra e já contém o datasource Prometheus e o dashboard
+**Third Sector API — Overview** provisionados automaticamente — sem configuração manual na UI.
 
 | Painel | Métrica |
 |---|---|
