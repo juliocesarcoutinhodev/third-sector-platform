@@ -1,4 +1,4 @@
-package br.com.toponesystem.thirdsector.tenant;
+package br.com.toponesystem.thirdsector.tenant.config;
 
 import lombok.Getter;
 import lombok.Setter;
