@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS isolation_record (
+    id   BIGSERIAL PRIMARY KEY,
+    data VARCHAR(255) NOT NULL
+);
