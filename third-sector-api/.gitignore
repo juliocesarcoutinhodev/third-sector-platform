@@ -1,5 +1,6 @@
 HELP.md
 target/
+logs/
 
 # Env files gerenciados em infra/ — ver ../.gitignore
 .mvn/wrapper/maven-wrapper.jar

@@ -1,4 +1,4 @@
-package br.com.toponesystem.thirdsector.shared.config;
+package br.com.toponesystem.thirdsector.shared.adapter.in.web;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
