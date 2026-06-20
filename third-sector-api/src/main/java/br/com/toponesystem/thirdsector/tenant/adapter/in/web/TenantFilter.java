@@ -2,7 +2,7 @@ package br.com.toponesystem.thirdsector.tenant.adapter.in.web;
 
 import br.com.toponesystem.thirdsector.tenant.TenantProperties;
 import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantValidator;
+import br.com.toponesystem.thirdsector.tenant.domain.port.out.TenantValidator;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

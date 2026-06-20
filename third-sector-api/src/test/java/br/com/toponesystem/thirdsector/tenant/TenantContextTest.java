@@ -1,7 +1,7 @@
 package br.com.toponesystem.thirdsector.tenant;
 
 import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContextNotSetException;
+import br.com.toponesystem.thirdsector.tenant.domain.exception.TenantContextNotSetException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 

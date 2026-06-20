@@ -1,7 +1,7 @@
 package br.com.toponesystem.thirdsector.tenant.adapter.out.validation;
 
 import br.com.toponesystem.thirdsector.tenant.TenantProperties;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantValidator;
+import br.com.toponesystem.thirdsector.tenant.domain.port.out.TenantValidator;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;

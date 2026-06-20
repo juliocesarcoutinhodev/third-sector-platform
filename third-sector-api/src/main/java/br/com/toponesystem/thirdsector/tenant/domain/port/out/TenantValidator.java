@@ -1,4 +1,4 @@
-package br.com.toponesystem.thirdsector.tenant.domain;
+package br.com.toponesystem.thirdsector.tenant.domain.port.out;
 
 /**
  * Port for validating whether a tenant identifier corresponds to an active municipality.

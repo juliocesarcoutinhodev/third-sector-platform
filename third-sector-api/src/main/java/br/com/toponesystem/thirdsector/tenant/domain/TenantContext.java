@@ -1,5 +1,7 @@
 package br.com.toponesystem.thirdsector.tenant.domain;
 
+import br.com.toponesystem.thirdsector.tenant.domain.exception.TenantContextNotSetException;
+
 /**
  * Thread-safe holder for the current tenant identifier during request processing.
  *

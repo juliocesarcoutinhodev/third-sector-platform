@@ -1,6 +1,6 @@
 package br.com.toponesystem.thirdsector.tenant.adapter.out.validation;
 
-import br.com.toponesystem.thirdsector.tenant.domain.TenantValidator;
+import br.com.toponesystem.thirdsector.tenant.domain.port.out.TenantValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-package br.com.toponesystem.thirdsector.tenant.domain;
+package br.com.toponesystem.thirdsector.tenant.domain.exception;
 
 public class TenantContextNotSetException extends IllegalStateException {
 
