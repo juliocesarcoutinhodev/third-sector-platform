@@ -1,5 +1,6 @@
-package br.com.toponesystem.thirdsector.municipality.application;
+package br.com.toponesystem.thirdsector.municipality.application.usecase;
 
+import br.com.toponesystem.thirdsector.municipality.application.MunicipalityView;
 import br.com.toponesystem.thirdsector.municipality.domain.MunicipalityNotFoundException;
 import br.com.toponesystem.thirdsector.municipality.domain.port.out.MunicipalityRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,13 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class FindMunicipalityByIdUseCase {
+public class FindMunicipalityBySubdomainUseCase {
 
     private final MunicipalityRepository repository;
 
-    public MunicipalityView execute(Long id) {
-        return repository.findById(id)
+    public MunicipalityView execute(String subdomain) {
+        return repository.findBySubdomain(subdomain)
                 .map(MunicipalityView::from)
-                .orElseThrow(() -> new MunicipalityNotFoundException(id));
+                .orElseThrow(() -> new MunicipalityNotFoundException(subdomain));
     }
 }

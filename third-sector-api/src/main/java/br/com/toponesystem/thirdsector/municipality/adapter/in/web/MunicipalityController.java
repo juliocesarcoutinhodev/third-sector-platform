@@ -1,10 +1,10 @@
 package br.com.toponesystem.thirdsector.municipality.adapter.in.web;
 
-import br.com.toponesystem.thirdsector.municipality.application.FindMunicipalityByIdUseCase;
-import br.com.toponesystem.thirdsector.municipality.application.FindMunicipalityBySubdomainUseCase;
-import br.com.toponesystem.thirdsector.municipality.application.ListActiveMunicipalitiesUseCase;
 import br.com.toponesystem.thirdsector.municipality.application.MunicipalityView;
-import br.com.toponesystem.thirdsector.municipality.application.RegisterMunicipalityUseCase;
+import br.com.toponesystem.thirdsector.municipality.application.usecase.FindMunicipalityByIdUseCase;
+import br.com.toponesystem.thirdsector.municipality.application.usecase.FindMunicipalityBySubdomainUseCase;
+import br.com.toponesystem.thirdsector.municipality.application.usecase.ListActiveMunicipalitiesUseCase;
+import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityUseCase;
 import br.com.toponesystem.thirdsector.shared.adapter.in.web.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

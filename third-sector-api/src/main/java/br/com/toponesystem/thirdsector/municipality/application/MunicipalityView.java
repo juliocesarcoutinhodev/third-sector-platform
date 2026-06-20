@@ -1,7 +1,7 @@
 package br.com.toponesystem.thirdsector.municipality.application;
 
-import br.com.toponesystem.thirdsector.municipality.domain.Municipality;
-import br.com.toponesystem.thirdsector.municipality.domain.Plan;
+import br.com.toponesystem.thirdsector.municipality.domain.model.Municipality;
+import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 
 import java.time.Instant;
 
@@ -16,7 +16,7 @@ public record MunicipalityView(
         Instant updatedAt
 ) {
 
-    static MunicipalityView from(Municipality m) {
+    public static MunicipalityView from(Municipality m) {
         return new MunicipalityView(
                 m.getId(), m.getName(), m.getCnpj(), m.getSubdomain(),
                 m.getPlan(), m.isActive(), m.getCreatedAt(), m.getUpdatedAt()

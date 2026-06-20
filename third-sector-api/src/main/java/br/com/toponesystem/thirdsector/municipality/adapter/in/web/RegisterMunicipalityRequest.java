@@ -1,6 +1,6 @@
 package br.com.toponesystem.thirdsector.municipality.adapter.in.web;
 
-import br.com.toponesystem.thirdsector.municipality.domain.Plan;
+import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
