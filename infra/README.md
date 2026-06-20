@@ -11,6 +11,10 @@ Ambiente de desenvolvimento completo via Docker Compose. Sobe PostgreSQL, Redis,
 | Kafka | 9092 | — |
 | MinIO | 9000 (API) / 9001 (console) | http://localhost:9001 |
 | Mailpit | 1025 (SMTP) / 8025 (UI) | http://localhost:8025 |
+| Prometheus | 9090 | http://localhost:9090 |
+| Grafana | 3000 | http://localhost:3000 |
+| Loki | 3100 | — |
+| Promtail | 9080 | — |
 
 ## Pré-requisitos
 
@@ -81,3 +85,6 @@ Após subir os serviços, crie o bucket manualmente pelo console em http://local
 | `postgres_data` | PostgreSQL | Banco de dados |
 | `kafka_data` | Kafka | Tópicos e offsets |
 | `minio_data` | MinIO | Objetos armazenados |
+| `prometheus_data` | Prometheus | Séries temporais de métricas |
+| `grafana_data` | Grafana | Dashboards, usuários e configurações |
+| `loki_data` | Loki | Chunks de logs agregados |

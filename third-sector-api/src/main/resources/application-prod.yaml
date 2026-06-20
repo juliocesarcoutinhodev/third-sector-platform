@@ -1,3 +1,6 @@
+tenant:
+  header-fallback-enabled: false
+
 spring:
   jpa:
     show-sql: false

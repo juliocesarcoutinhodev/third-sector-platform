@@ -1,4 +1,4 @@
-package br.com.toponesystem.thirdsector.shared.config;
+package br.com.toponesystem.thirdsector.shared.adapter.in.web;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;

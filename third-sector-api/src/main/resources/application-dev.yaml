@@ -18,16 +18,27 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,env,beans,mappings,metrics
+        include: health,info,env,beans,mappings,metrics,prometheus
   endpoint:
     health:
       show-details: always
+
+tenant:
+  header-fallback-enabled: true
+  known-tenants:
+    - maringa
+    - londrina
+    - curitiba
 
 logging:
   structured:
     format:
       console: logstash
+      file: logstash
+  file:
+    name: logs/app.log
   level:
     br.com.toponesystem: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
