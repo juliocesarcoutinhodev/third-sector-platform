@@ -5,8 +5,8 @@ import br.com.toponesystem.thirdsector.municipality.application.MunicipalityView
 import br.com.toponesystem.thirdsector.municipality.application.usecase.FindMunicipalityBySubdomainUseCase;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.ListActiveMunicipalitiesUseCase;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityUseCase;
-import br.com.toponesystem.thirdsector.municipality.domain.DuplicateSubdomainException;
-import br.com.toponesystem.thirdsector.municipality.domain.MunicipalityNotFoundException;
+import br.com.toponesystem.thirdsector.municipality.domain.exception.DuplicateSubdomainException;
+import br.com.toponesystem.thirdsector.municipality.domain.exception.MunicipalityNotFoundException;
 import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

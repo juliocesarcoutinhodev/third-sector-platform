@@ -1,6 +1,6 @@
 package br.com.toponesystem.thirdsector.municipality.adapter.out.persistence;
 
-import br.com.toponesystem.thirdsector.municipality.domain.DuplicateSubdomainException;
+import br.com.toponesystem.thirdsector.municipality.domain.exception.DuplicateSubdomainException;
 import br.com.toponesystem.thirdsector.municipality.domain.model.Municipality;
 import br.com.toponesystem.thirdsector.municipality.domain.port.out.MunicipalityRepository;
 import lombok.RequiredArgsConstructor;

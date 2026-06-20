@@ -1,4 +1,4 @@
-package br.com.toponesystem.thirdsector.municipality.domain;
+package br.com.toponesystem.thirdsector.municipality.domain.exception;
 
 import br.com.toponesystem.thirdsector.shared.domain.exception.ResourceNotFoundException;
 

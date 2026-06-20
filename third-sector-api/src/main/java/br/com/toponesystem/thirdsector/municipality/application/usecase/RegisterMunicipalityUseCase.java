@@ -1,7 +1,7 @@
 package br.com.toponesystem.thirdsector.municipality.application.usecase;
 
 import br.com.toponesystem.thirdsector.municipality.application.MunicipalityView;
-import br.com.toponesystem.thirdsector.municipality.domain.DuplicateSubdomainException;
+import br.com.toponesystem.thirdsector.municipality.domain.exception.DuplicateSubdomainException;
 import br.com.toponesystem.thirdsector.municipality.domain.model.Municipality;
 import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 import br.com.toponesystem.thirdsector.municipality.domain.port.out.MunicipalityRepository;
