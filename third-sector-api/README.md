@@ -66,9 +66,23 @@ municipality/
 br.com.toponesystem.thirdsector
 ├── shared/                ← módulo OPEN: exceções base, ErrorResponse, GlobalExceptionHandler
 │   ├── domain/exception/  ← BusinessException, ConflictException, ResourceNotFoundException
-│   └── adapter/in/web/    ← ApiResponse, ErrorResponse, PageResponse, GlobalExceptionHandler
+│   └── adapter/in/web/    ← ApiResponse, ErrorResponse, PageResponse, GlobalExceptionHandler,
+│                             SecurityConfig, RequestIdFilter, OpenApiConfig, EnvFileLogger
 ├── tenant/                ← multi-tenancy (schema-per-tenant, TenantFilter, migrações)
+│   ├── domain/
+│   │   ├── TenantContext.java       ← core: ThreadLocal holder do tenant atual
+│   │   ├── exception/               ← TenantContextNotSetException
+│   │   ├── model/                   ← IsolationRecord (entidade de validação de isolamento)
+│   │   └── port/out/                ← TenantValidator (porta de validação)
+│   ├── adapter/
+│   │   ├── in/web/TenantFilter      ← resolve subdomínio → TenantContext
+│   │   ├── in/async/                ← AsyncConfiguration, TaskDecorator
+│   │   └── out/{persistence, migration, validation}
+│   └── config/TenantProperties.java
 ├── municipality/          ← cadastro de municípios (CRUD completo com hexagonal)
+│   ├── domain/{model, exception, port/out}
+│   ├── application/{MunicipalityView, usecase/}
+│   └── adapter/{in/web, out/persistence}
 ├── auth/                  ← stub
 ├── organization/          ← stub
 ├── financial/             ← stub
@@ -203,6 +217,22 @@ O schema do banco é versionado pelo Flyway. As migrations são separadas por es
 | `db/migration/master` | Schema `master` (dados cross-tenant: municípios, planos, config) |
 | `db/migration/tenant` | Schemas individuais de cada município (dados operacionais) |
 
+### Master
+
+| Versão | Descrição |
+|---|---|
+| V1 | Criação do schema `master` |
+| V2 | Tabela `municipality` (nome, cnpj, subdomain, plan, active) |
+| V3 | Expansão da tabela `municipality` |
+| V4 | Coluna `cnpj` apenas dígitos |
+
+### Tenant
+
+| Versão | Descrição |
+|---|---|
+| V1 | Baseline do schema tenant |
+| V2 | Tabela `isolation_record` — validação de isolamento multi-tenant |
+
 No startup, o `TenantMigrationStartupRunner` aplica as migrations do master e depois
 itera sobre todos os municípios ativos aplicando as migrations nos schemas tenant.
 
@@ -285,6 +315,22 @@ O container sobe na primeira vez que qualquer classe que estende `AbstractIntegr
 é carregada, e é destruído automaticamente ao final da suíte. As propriedades
 `spring.datasource.*` são injetadas dinamicamente via `@DynamicPropertySource`,
 isolando completamente o ambiente de testes do ambiente de desenvolvimento.
+
+### Teste de isolamento multi-tenant
+
+`TenantDataIsolationTest` valida o fluxo completo de multi-tenancy sem mocks:
+
+1. Cadastra dois municípios via `RegisterMunicipalityUseCase`
+2. Executa `TenantMigrationService` para criar os schemas tenant
+3. Insere dados distintos em cada schema via `IsolationRecordRepository`
+4. Alterna `TenantContext` e prova que tenant A nunca vê dados de tenant B
+5. Sem tenant definido → query falha (tabela não existe no schema `master`)
+
+```java
+class TenantDataIsolationTest extends AbstractIntegrationTest {
+    // 4 assertions provando isolamento total entre schemas
+}
+```
 
 ## Observabilidade
 
