@@ -1,6 +1,6 @@
 package br.com.toponesystem.thirdsector.municipality.application.usecase;
 
-import br.com.toponesystem.thirdsector.municipality.application.MunicipalityView;
+import br.com.toponesystem.thirdsector.municipality.application.dto.MunicipalityView;
 import br.com.toponesystem.thirdsector.municipality.domain.exception.MunicipalityNotFoundException;
 import br.com.toponesystem.thirdsector.municipality.domain.port.out.MunicipalityRepository;
 import lombok.RequiredArgsConstructor;

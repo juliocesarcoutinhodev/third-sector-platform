@@ -1,7 +1,7 @@
 package br.com.toponesystem.thirdsector.municipality;
 
 import br.com.toponesystem.thirdsector.AbstractIntegrationTest;
-import br.com.toponesystem.thirdsector.municipality.application.MunicipalityView;
+import br.com.toponesystem.thirdsector.municipality.application.dto.MunicipalityView;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.FindMunicipalityBySubdomainUseCase;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.ListActiveMunicipalitiesUseCase;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityUseCase;

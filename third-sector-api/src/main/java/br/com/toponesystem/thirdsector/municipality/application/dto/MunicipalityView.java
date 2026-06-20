@@ -1,4 +1,4 @@
-package br.com.toponesystem.thirdsector.municipality.application;
+package br.com.toponesystem.thirdsector.municipality.application.dto;
 
 import br.com.toponesystem.thirdsector.municipality.domain.model.Municipality;
 import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
