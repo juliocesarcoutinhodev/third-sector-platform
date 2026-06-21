@@ -12,7 +12,7 @@ arquitetura hexagonal + Clean Architecture e modularização via Spring Modulith
 | Cache | Redis |
 | Mensageria | Apache Kafka |
 | Armazenamento | MinIO |
-| Segurança | Spring Security + JWT |
+| Segurança | Spring Security + JWT (jjwt 0.12.x, HS256) |
 | E-mail | Spring Mail + Thymeleaf |
 | Mapeamento | MapStruct (+ Lombok @Builder para entidades) |
 | Validação | Bean Validation + @CNPJ (Hibernate Validator) |
@@ -178,7 +178,9 @@ O mapper (`*EntityMapper`) é injetado no `*PersistenceAdapter` e contém apenas
 
 ### Auth
 
-Domínio de autenticação com `User` e binding de roles:
+Domínio de autenticação com `User`, binding de roles e endpoint de login:
+
+**Roles e binding:**
 
 | Role | `organizationId` |
 |---|---|
@@ -191,11 +193,23 @@ A validação role-organization ocorre no factory method `User.create()`.
 O construtor de hidratação (all-args público) não valida — permite
 reconstruir qualquer estado vindo da persistência.
 
-Mapeamento `User` ↔ `UserEntity` via MapStruct (`UserMapper`).
-Tabela `users` no schema tenant, `super_admin` no schema `master`.
+**Endpoints:**
 
-**Pendente:** controllers, use cases (`RegisterUserUseCase`, etc.),
-`UserDetailsService`, JWT filters, refresh token rotation, CSRF.
+| Método | Path | Descrição |
+|---|---|---|
+| `POST` | `/api/users` | Cadastro de usuário (BCrypt, evento `UserRegisteredEvent`) |
+| `POST` | `/api/auth/login` | Login com email/senha, retorna JWT em cookie HttpOnly |
+
+**Login:**
+- `LoginUseCase` valida credenciais + usuário ativo, retorna erro genérico
+  (`AuthenticationFailedException`) em todos os casos de falha (evita enumeração de emails)
+- `JjwtTokenGenerator` assina JWT HS256 com claims: `sub` (userId), `role`, `tenantId`, `organizationId`
+- Cookie `access_token`: HttpOnly, Secure (configurável por profile), SameSite=Lax, maxAge = expiração
+- Configuração: `security.jwt.secret` (env `JWT_SECRET`), `security.jwt.expiration` (default 15min)
+- Resposta NUNCA contém o token no body — apenas dados não sensíveis do usuário
+
+**Pendente:** `UserDetailsService`, JWT verification filter, refresh token rotation,
+CSRF protection, `@PreAuthorize` nos endpoints.
 
 ### Organization
 
@@ -314,6 +328,7 @@ O schema do banco é versionado pelo Flyway. As migrations são separadas por es
 | V2 | Tabela `isolation_record` — validação de isolamento multi-tenant |
 | V3 | Tabela `users` (name, email, password_hash, role, organization_id, active, timestamps) |
 | V4 | Tabela `organizations` (name, cnpj, status, timestamps) — UNIQUE em cnpj |
+| V5 | Tabela `event_publication` — registro de eventos do Spring Modulith |
 
 No startup, o `TenantMigrationStartupRunner` aplica as migrations do master e depois
 itera sobre todos os municípios ativos aplicando as migrations nos schemas tenant.

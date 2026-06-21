@@ -35,11 +35,16 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+  modulith:
+    events:
+      externalization:
+        enabled: false
 
 security:
   jwt:
     secret: test-secret-key-for-testing-only-must-be-at-least-256-bits-long-here
-    expiration: 86400000
+    expiration: 900000
+    cookie-secure: false
 
 minio:
   endpoint: http://localhost:9000

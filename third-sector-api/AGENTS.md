@@ -166,4 +166,7 @@ If a decision isn't covered by this file (e.g. a new module's internal structure
 dependency choice), default to the architectural principles above (hexagonal layering, thin
 modules, no framework leakage into domain code) and flag the assumption explicitly in your
 response rather than silently picking an approach that contradicts the existing codebase
-patterns.
+patterns.  
+
+## Observational notes
+Always consult the documentation on the web to validate new features, and check whether the implementation is in accordance with the technologies used.
