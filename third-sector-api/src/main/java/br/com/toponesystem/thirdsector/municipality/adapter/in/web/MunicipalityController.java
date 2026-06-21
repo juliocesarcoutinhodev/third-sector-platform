@@ -31,7 +31,7 @@ class MunicipalityController {
 
     @PostMapping
     ResponseEntity<ApiResponse<MunicipalityView>> register(@Valid @RequestBody RegisterMunicipalityRequest request) {
-        var view = registerUseCase.execute(request.name(), request.cnpj(), request.subdomain(), request.plan());
+        var view = registerUseCase.execute(request.name(), request.cnpj(), request.subdomain(), request.plan(), request.logo());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Município cadastrado com sucesso.", view));
     }

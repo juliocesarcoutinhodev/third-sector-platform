@@ -47,6 +47,10 @@ class MunicipalityEntity {
     @Column(length = 50, nullable = false)
     private Plan plan;
 
+    @Size(max = 500)
+    @Column(length = 500)
+    private String logo;
+
     @Column(nullable = false)
     private boolean active;
 

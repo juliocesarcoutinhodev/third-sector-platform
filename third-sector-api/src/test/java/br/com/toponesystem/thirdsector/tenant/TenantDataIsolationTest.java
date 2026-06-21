@@ -41,8 +41,8 @@ class TenantDataIsolationTest extends AbstractIntegrationTest {
 
     @BeforeAll
     void setUpTenants() {
-        registerUseCase.execute("Alpha Municipality", CNPJ_A, TENANT_A, Plan.BASIC);
-        registerUseCase.execute("Beta Municipality", CNPJ_B, TENANT_B, Plan.BASIC);
+        registerUseCase.execute("Alpha Municipality", CNPJ_A, TENANT_A, Plan.BASIC, null);
+        registerUseCase.execute("Beta Municipality", CNPJ_B, TENANT_B, Plan.BASIC, null);
 
         migrationService.migrate(TENANT_A);
         migrationService.migrate(TENANT_B);

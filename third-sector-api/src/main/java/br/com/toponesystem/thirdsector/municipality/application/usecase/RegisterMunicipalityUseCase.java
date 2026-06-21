@@ -16,11 +16,11 @@ public class RegisterMunicipalityUseCase {
     private final MunicipalityRepository repository;
 
     @Transactional
-    public MunicipalityView execute(String name, String cnpj, String subdomain, Plan plan) {
+    public MunicipalityView execute(String name, String cnpj, String subdomain, Plan plan, String logo) {
         if (repository.existsBySubdomain(subdomain)) {
             throw new DuplicateSubdomainException(subdomain);
         }
-        var municipality = new Municipality(name, stripCnpjMask(cnpj), subdomain, plan);
+        var municipality = new Municipality(name, stripCnpjMask(cnpj), subdomain, plan, logo);
         var saved = repository.save(municipality);
         return MunicipalityView.from(saved);
     }

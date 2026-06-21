@@ -33,7 +33,7 @@ class MunicipalityServiceTest extends AbstractIntegrationTest {
 
     @Test
     void registersNewMunicipality() {
-        var view = registerUseCase.execute("Maringá", CNPJ_MARINGA, "maringa-test", Plan.BASIC);
+        var view = registerUseCase.execute("Maringá", CNPJ_MARINGA, "maringa-test", Plan.BASIC, null);
 
         assertThat(view.id()).isNotNull();
         assertThat(view.subdomain()).isEqualTo("maringa-test");
@@ -43,24 +43,24 @@ class MunicipalityServiceTest extends AbstractIntegrationTest {
 
     @Test
     void stripsCnpjMaskOnRegister() {
-        var view = registerUseCase.execute("Curitiba", "43.773.954/0001-40", "curitiba-test", Plan.PREMIUM);
+        var view = registerUseCase.execute("Curitiba", "43.773.954/0001-40", "curitiba-test", Plan.PREMIUM, null);
 
         assertThat(view.cnpj()).isEqualTo(CNPJ_CURITIBA);
     }
 
     @Test
     void rejectsDuplicateSubdomain() {
-        registerUseCase.execute("Londrina", CNPJ_LONDRINA, "londrina-test", Plan.STANDARD);
+        registerUseCase.execute("Londrina", CNPJ_LONDRINA, "londrina-test", Plan.STANDARD, null);
 
         assertThatThrownBy(() ->
-                registerUseCase.execute("Londrina 2", CNPJ_LONDRINA2, "londrina-test", Plan.BASIC)
+                registerUseCase.execute("Londrina 2", CNPJ_LONDRINA2, "londrina-test", Plan.BASIC, null)
         ).isInstanceOf(DuplicateSubdomainException.class)
                 .hasMessageContaining("londrina-test");
     }
 
     @Test
     void findsBySubdomain() {
-        registerUseCase.execute("Cascavel", CNPJ_CASCAVEL, "cascavel-test", Plan.BASIC);
+        registerUseCase.execute("Cascavel", CNPJ_CASCAVEL, "cascavel-test", Plan.BASIC, null);
 
         MunicipalityView found = findBySubdomainUseCase.execute("cascavel-test");
 
@@ -77,7 +77,7 @@ class MunicipalityServiceTest extends AbstractIntegrationTest {
     @Test
     void listActiveReturnsOnlyActiveMunicipalities() {
         int before = listActiveUseCase.execute().size();
-        registerUseCase.execute("Londrina Norte", CNPJ_LONDRINA2, "londrina-norte-test", Plan.STANDARD);
+        registerUseCase.execute("Londrina Norte", CNPJ_LONDRINA2, "londrina-norte-test", Plan.STANDARD, null);
 
         assertThat(listActiveUseCase.execute()).hasSizeGreaterThan(before);
     }

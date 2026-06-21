@@ -13,5 +13,6 @@ record RegisterMunicipalityRequest(
         @Pattern(regexp = "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
                 message = "Subdomain must contain only lowercase letters, numbers, and hyphens")
         String subdomain,
-        @NotNull Plan plan
+        @NotNull Plan plan,
+        String logo
 ) {}

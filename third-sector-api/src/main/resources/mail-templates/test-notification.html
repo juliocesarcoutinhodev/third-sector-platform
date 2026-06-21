@@ -1,0 +1,21 @@
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="content">
+    <h2 style="color:#1f2937; font-size:18px; margin:0 0 16px 0; font-family:Arial, Helvetica, sans-serif;">
+        Notificação de Teste
+    </h2>
+    <p style="color:#4b5563; font-size:14px; line-height:1.6; margin:0 0 12px 0; font-family:Arial, Helvetica, sans-serif;">
+        Esta é uma notificação de teste do Third Sector Platform.
+    </p>
+    <p style="color:#4b5563; font-size:14px; line-height:1.6; margin:0 0 24px 0; font-family:Arial, Helvetica, sans-serif;">
+        O sistema de notificações está funcionando corretamente.
+        Município: <strong th:text="${municipalityName}">Nome</strong>
+    </p>
+    <table cellpadding="0" cellspacing="0">
+        <tr>
+            <td style="background-color:#1a56db; border-radius:4px; padding:12px 24px;">
+                <a href="#" style="color:#ffffff; text-decoration:none; font-size:14px; font-weight:bold; font-family:Arial, Helvetica, sans-serif; display:inline-block;">
+                    Acessar Plataforma
+                </a>
+            </td>
+        </tr>
+    </table>
+</th:block>
