@@ -129,10 +129,15 @@ RuntimeException
 │   └── OrganizationNotFoundException (organization)
 ├── ConflictException          (shared) → 409
 │   ├── DuplicateSubdomainException (municipality)
-│   └── DuplicateCnpjException (organization)
+│   ├── DuplicateCnpjException (organization)
+│   └── DuplicateEmailException (auth)
 ├── BusinessException          (shared) → 422
 │   ├── InvalidUserRoleAssignmentException (auth)
-│   └── EmailSendFailedException (notification)
+│   ├── EmailSendFailedException (notification)
+│   ├── AuthenticationFailedException (auth)
+│   └── InvalidRefreshTokenException (auth)
+├── AccessDeniedException      (Spring) → 403
+├── AuthenticationException    (Spring) → 401
 └── Exception                  → 500
 ```
 
@@ -225,8 +230,17 @@ reconstruir qualquer estado vindo da persistência.
 - Após revogação em cascata, todos os tokens da família são rejeitados → novo login obrigatório
 - Template: `mail-templates/suspicious-activity-detected.html` (PT-BR, alerta vermelho)
 
-**Pendente:** `UserDetailsService`, JWT verification filter,
-CSRF protection, `@PreAuthorize` nos endpoints.
+**Autorização (JWT + @PreAuthorize):**
+- `JwtAuthenticationFilter`: extrai JWT do cookie `access_token`, valida assinatura HS256,
+  popula `SecurityContext` com `TenantAuthenticationToken` (userId, role, tenantId, organizationId)
+- `@EnableMethodSecurity` + `@PreAuthorize` nos endpoints protegidos
+- `ScopeAuthorization` (`@scope` SpEL): `isOrganizationMember()` e `isSameTenant()`
+- Regras: SUPER_ADMIN irrestrito, MUNICIPALITY_ADM restrito ao próprio tenant,
+  ORGANIZATION_MANAGER/OPERATOR restritos ao próprio organizationId
+- Erros: 401 Unauthorized (sem token), 403 Forbidden (sem permissão) — via `GlobalExceptionHandler`
+- Endpoints públicos: `/api/auth/**`, actuator, swagger — whitelistados no `SecurityConfig`
+
+**Pendente:** `UserDetailsService`, CSRF protection.
 
 ### Organization
 
