@@ -200,6 +200,7 @@ reconstruir qualquer estado vindo da persistência.
 | `POST` | `/api/users` | Cadastro de usuário (BCrypt, evento `UserRegisteredEvent`) |
 | `POST` | `/api/auth/login` | Login com email/senha, retorna JWT em cookie HttpOnly |
 | `POST` | `/api/auth/refresh` | Rotation de refresh token (gera novo par, invalida anterior) |
+| `POST` | `/api/auth/logout` | Revoga família do refresh token, limpa cookies (idempotente) |
 
 **Login:**
 - `LoginUseCase` valida credenciais + usuário ativo, retorna erro genérico

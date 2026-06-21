@@ -2,6 +2,7 @@ package br.com.toponesystem.thirdsector.auth.adapter.in.web;
 
 import br.com.toponesystem.thirdsector.auth.adapter.out.security.JwtProperties;
 import br.com.toponesystem.thirdsector.auth.application.usecase.LoginUseCase;
+import br.com.toponesystem.thirdsector.auth.application.usecase.LogoutUseCase;
 import br.com.toponesystem.thirdsector.auth.application.usecase.RefreshTokenProperties;
 import br.com.toponesystem.thirdsector.auth.application.usecase.TokenService;
 import br.com.toponesystem.thirdsector.auth.domain.exception.InvalidRefreshTokenException;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -26,6 +28,7 @@ class AuthController {
 
     private final LoginUseCase loginUseCase;
     private final TokenService tokenService;
+    private final LogoutUseCase logoutUseCase;
     private final LoginRequestMapper requestMapper;
     private final JwtProperties jwtProperties;
     private final RefreshTokenProperties refreshTokenProperties;
@@ -61,6 +64,20 @@ class AuthController {
                 .body(LoginResponse.empty());
     }
 
+    @PostMapping("/logout")
+    ResponseEntity<Map<String, Object>> logout(HttpServletRequest request) {
+        var rawToken = extractCookieOrNull(request, "refresh_token");
+        logoutUseCase.execute(rawToken);
+
+        var clearedAccess = clearCookie("access_token", "/");
+        var clearedRefresh = clearCookie("refresh_token", "/api/auth/refresh");
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, clearedAccess.toString())
+                .header(HttpHeaders.SET_COOKIE, clearedRefresh.toString())
+                .body(Map.of("message", "Logged out successfully"));
+    }
+
     private ResponseCookie buildAccessCookie(String token) {
         return ResponseCookie.from("access_token", token)
                 .httpOnly(true)
@@ -81,6 +98,16 @@ class AuthController {
                 .build();
     }
 
+    private ResponseCookie clearCookie(String name, String path) {
+        return ResponseCookie.from(name, "")
+                .httpOnly(true)
+                .secure(jwtProperties.cookieSecure())
+                .sameSite("Lax")
+                .path(path)
+                .maxAge(0)
+                .build();
+    }
+
     private String extractCookie(HttpServletRequest request, String name) {
         if (request.getCookies() == null) {
             throw new InvalidRefreshTokenException();
@@ -90,5 +117,16 @@ class AuthController {
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElseThrow(InvalidRefreshTokenException::new);
+    }
+
+    private String extractCookieOrNull(HttpServletRequest request, String name) {
+        if (request.getCookies() == null) {
+            return null;
+        }
+        return Arrays.stream(request.getCookies())
+                .filter(c -> name.equals(c.getName()))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElse(null);
     }
 }
