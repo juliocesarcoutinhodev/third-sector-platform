@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,8 @@ class UserController {
     private final CreateUserRequestMapper requestMapper;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MUNICIPALITY_ADM', 'ORGANIZATION_MANAGER') " +
+                  "and @scope.isOrganizationMember(#request.organizationId())")
     ResponseEntity<ApiResponse<UserView>> create(@Valid @RequestBody CreateUserRequest request) {
         var view = createUserUseCase.execute(requestMapper.toCommand(request));
         return ResponseEntity.status(HttpStatus.CREATED)

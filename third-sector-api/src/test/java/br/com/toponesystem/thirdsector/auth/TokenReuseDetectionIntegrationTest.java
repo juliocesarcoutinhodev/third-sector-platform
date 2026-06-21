@@ -54,7 +54,7 @@ class TokenReuseDetectionIntegrationTest extends AbstractIntegrationTest {
     @BeforeAll
     void setUpTenant() {
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "Token Reuse Tenant", "88888888000191", TENANT, Plan.BASIC, null));
+                "Token Reuse Tenant", "11111111000191", TENANT, Plan.BASIC, null));
         migrationService.migrate(TENANT);
         TenantContext.setCurrentTenant(TENANT);
         createOrganization.execute(new CreateOrganizationCommand("Reuse ONG", "12345678000195"));

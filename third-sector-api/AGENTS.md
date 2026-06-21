@@ -57,7 +57,26 @@ The platform has three components in this monorepo, but this file governs only t
    of multiple primitive parameters. The adapter layer uses MapStruct mappers
    (`*Request → *Command`) to convert request DTOs into Commands. The controller becomes:
    validate request → `mapper.toCommand(request)` → `useCase.execute(command)` → return response.
-   Read-only queries (`findById`, `findBySubdomain`) with a single primitive parameter are exempt.
+    Read-only queries (`findById`, `findBySubdomain`) with a single primitive parameter are exempt.
+7. **Authorization via JWT cookie + @PreAuthorize.** Authentication is handled by `JwtAuthenticationFilter`
+   (registered inline in `SecurityConfig`, NOT as a `@Component` or `@Bean` — avoids MockMvc filter init issues
+   with CGLIB proxies). The filter extracts the JWT from the `access_token` cookie, validates the
+   HS256 signature, and populates `SecurityContext` with a `TenantAuthenticationToken` containing
+   `userId`, `role`, `tenantId`, and `organizationId`. The filter does NOT set `TenantContext` —
+   that remains the `TenantFilter`'s responsibility (from Host header).
+   
+   **Authorization rules** are applied via `@PreAuthorize` with the `@scope` bean (SpEL):
+   - `@scope.isOrganizationMember(#request.organizationId())` — SUPER_ADMIN always true,
+     MUNICIPALITY_ADM true only if their tenant matches the current TenantContext,
+     others must have the exact organizationId.
+   - `@scope.isSameTenant(#tenantId)` — SUPER_ADMIN always true, others must match JWT tenantId.
+   - Combine with `hasRole()` / `hasAnyRole()` for role checks.
+   
+   **Public endpoints** (`/api/auth/**`, actuator, swagger) are whitelisted in `SecurityConfig`.
+   Everything else requires authentication. `@EnableMethodSecurity` is required for `@PreAuthorize`.
+   
+   **403 Forbidden** and **401 Unauthorized** are handled by `GlobalExceptionHandler` returning
+   consistent `ErrorResponse` JSON.
 
 ## Naming conventions
 

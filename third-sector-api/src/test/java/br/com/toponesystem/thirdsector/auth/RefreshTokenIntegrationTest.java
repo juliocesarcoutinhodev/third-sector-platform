@@ -33,11 +33,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RefreshTokenIntegrationTest extends AbstractIntegrationTest {
 
-    private static final String TENANT = "refresh-test";
+    private static final long NANO = System.nanoTime();
+    private static final String TENANT = "refresh-" + NANO;
 
     @DynamicPropertySource
     static void registerTenant(DynamicPropertyRegistry registry) {
-        registry.add("tenant.known-tenants", () -> "maringa,londrina,refresh-test");
+        registry.add("tenant.known-tenants",
+                () -> "maringa,londrina,refresh-" + NANO);
     }
 
     @Autowired
@@ -61,7 +63,7 @@ class RefreshTokenIntegrationTest extends AbstractIntegrationTest {
     @BeforeAll
     void setUpTenant() {
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "Refresh Test Tenant", "77777777000191", TENANT, Plan.BASIC, null));
+                "Refresh Test Tenant", "88888888000191", TENANT, Plan.BASIC, null));
         migrationService.migrate(TENANT);
         TenantContext.setCurrentTenant(TENANT);
         createOrganization.execute(new CreateOrganizationCommand("Refresh ONG", "12345678000195"));
