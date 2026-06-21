@@ -45,6 +45,8 @@ security:
     secret: test-secret-key-for-testing-only-must-be-at-least-256-bits-long-here
     expiration: 900000
     cookie-secure: false
+  refresh-token:
+    expiration: 604800000
 
 minio:
   endpoint: http://localhost:9000

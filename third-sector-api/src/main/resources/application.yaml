@@ -60,6 +60,8 @@ security:
     secret: ${JWT_SECRET}
     expiration: ${JWT_EXPIRATION:900000}
     cookie-secure: true
+  refresh-token:
+    expiration: ${REFRESH_TOKEN_EXPIRATION:604800000}
 
 minio:
   endpoint: ${MINIO_ENDPOINT}

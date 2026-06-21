@@ -16,4 +16,8 @@ record LoginResponse(
                 result.userId(), result.name(), result.email(),
                 result.role(), result.organizationId());
     }
+
+    static LoginResponse empty() {
+        return new LoginResponse(null, null, null, null, null);
+    }
 }

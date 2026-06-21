@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="content">
+    <h1 style="color: #c0392b; font-size: 24px; margin-bottom: 24px;">
+        Alerta de Segurança
+    </h1>
+
+    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+        Olá, <span th:text="${userName}">Nome</span>.
+    </p>
+
+    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+        Detectamos uma <strong>tentativa suspeita de reutilização de um token de acesso</strong> já revogado
+        associado à sua conta na <strong>Plataforma do Terceiro Setor</strong>.
+    </p>
+
+    <div style="background-color: #fdf2f2; border-left: 4px solid #c0392b; padding: 16px; margin: 24px 0;">
+        <p style="margin: 0; font-size: 14px; color: #555;">
+            <strong>Por segurança, todas as suas sessões ativas foram encerradas.</strong>
+            Você precisará fazer login novamente para acessar o sistema.
+        </p>
+    </div>
+
+    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+        Se você não reconhece esta atividade, recomendamos que:
+    </p>
+
+    <ul style="font-size: 14px; line-height: 1.8; color: #555;">
+        <li>Altere sua senha imediatamente</li>
+        <li>Entre em contato com o administrador da sua prefeitura</li>
+    </ul>
+
+    <p style="font-size: 14px; color: #999; margin-top: 32px;">
+        Este é um e-mail automático. Por favor, não responda.
+    </p>
+</th:block>
+</html>

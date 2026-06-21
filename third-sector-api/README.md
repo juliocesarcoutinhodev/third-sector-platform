@@ -199,6 +199,7 @@ reconstruir qualquer estado vindo da persistência.
 |---|---|---|
 | `POST` | `/api/users` | Cadastro de usuário (BCrypt, evento `UserRegisteredEvent`) |
 | `POST` | `/api/auth/login` | Login com email/senha, retorna JWT em cookie HttpOnly |
+| `POST` | `/api/auth/refresh` | Rotation de refresh token (gera novo par, invalida anterior) |
 
 **Login:**
 - `LoginUseCase` valida credenciais + usuário ativo, retorna erro genérico
@@ -208,7 +209,22 @@ reconstruir qualquer estado vindo da persistência.
 - Configuração: `security.jwt.secret` (env `JWT_SECRET`), `security.jwt.expiration` (default 15min)
 - Resposta NUNCA contém o token no body — apenas dados não sensíveis do usuário
 
-**Pendente:** `UserDetailsService`, JWT verification filter, refresh token rotation,
+**Refresh Token Rotation:**
+- `TokenService` — `createTokenPair(LoginResult)` no login + `rotateRefreshToken(String)` no refresh
+- Refresh token opaco (64 hex chars via `SecureRandom`), hash SHA-256 armazenado no banco
+- Tabela `refresh_token` (tenant schema): id, userId, tokenHash, expiresAt, revoked, familyId
+- Cookie `refresh_token`: HttpOnly, Secure, SameSite=Lax, path=`/api/auth/refresh`, maxAge=7d
+- Rotation: revoga token atual (`revoked=true`), gera novo com mesmo `familyId`
+- Configuração: `security.refresh-token.expiration` (default 604800000ms = 7 dias)
+
+**Detecção de Reuso (Token Theft Detection):**
+- `TokenRevocationService.handleReuse()` — `@Transactional(REQUIRES_NEW)` para commit imediato
+- Ao detectar refresh token já revogado: revoga TODA a família (`revokeByFamilyId`)
+- Publica `SuspiciousTokenReuseDetectedEvent` → listener envia email de alerta ao usuário
+- Após revogação em cascata, todos os tokens da família são rejeitados → novo login obrigatório
+- Template: `mail-templates/suspicious-activity-detected.html` (PT-BR, alerta vermelho)
+
+**Pendente:** `UserDetailsService`, JWT verification filter,
 CSRF protection, `@PreAuthorize` nos endpoints.
 
 ### Organization
@@ -329,6 +345,7 @@ O schema do banco é versionado pelo Flyway. As migrations são separadas por es
 | V3 | Tabela `users` (name, email, password_hash, role, organization_id, active, timestamps) |
 | V4 | Tabela `organizations` (name, cnpj, status, timestamps) — UNIQUE em cnpj |
 | V5 | Tabela `event_publication` — registro de eventos do Spring Modulith |
+| V6 | Tabela `refresh_token` — tokenHash SHA-256, revoked, familyId, índice em token_hash |
 
 No startup, o `TenantMigrationStartupRunner` aplica as migrations do master e depois
 itera sobre todos os municípios ativos aplicando as migrations nos schemas tenant.
