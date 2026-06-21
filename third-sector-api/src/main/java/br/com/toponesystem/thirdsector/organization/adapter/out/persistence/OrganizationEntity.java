@@ -1,6 +1,6 @@
-package br.com.toponesystem.thirdsector.auth.adapter.out.persistence;
+package br.com.toponesystem.thirdsector.organization.adapter.out.persistence;
 
-import br.com.toponesystem.thirdsector.auth.domain.model.Role;
+import br.com.toponesystem.thirdsector.organization.domain.model.OrganizationStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,7 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -18,16 +17,17 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.br.CNPJ;
 
 import java.time.Instant;
 
 @Entity
-@Table(name = "users")
+@Table(name = "organizations")
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-class UserEntity {
+class OrganizationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,25 +38,14 @@ class UserEntity {
     @Column(nullable = false)
     private String name;
 
-    @Email
+    @CNPJ
     @NotBlank
-    @Size(max = 255)
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    @NotBlank
-    @Column(nullable = false)
-    private String passwordHash;
+    @Column(length = 14, nullable = false, unique = true)
+    private String cnpj;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 50, nullable = false)
-    private Role role;
-
-    @Column
-    private Long organizationId;
-
-    @Column(nullable = false)
-    private boolean active;
+    @Column(length = 20, nullable = false)
+    private OrganizationStatus status;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
