@@ -13,8 +13,9 @@ arquitetura hexagonal + Clean Architecture e modularização via Spring Modulith
 | Mensageria | Apache Kafka |
 | Armazenamento | MinIO |
 | Segurança | Spring Security + JWT |
-| E-mail | Spring Mail |
-| Mapeamento | MapStruct |
+| E-mail | Spring Mail + Thymeleaf |
+| Mapeamento | MapStruct (+ Lombok @Builder para entidades) |
+| Validação | Bean Validation + @CNPJ (Hibernate Validator) |
 | Observabilidade | Actuator + Micrometer + Prometheus |
 | Testes | JUnit 5 + Testcontainers |
 | Arquitetura modular | Spring Modulith |
@@ -83,16 +84,16 @@ br.com.toponesystem.thirdsector
 │   ├── domain/{model, exception, port/out}
 │   ├── application/{MunicipalityView, usecase/}
 │   └── adapter/{in/web, out/persistence}
-├── auth/                  ← stub
-├── organization/          ← stub
+ ├── auth/                  ← domínio User/Role, persistência, testes (sem controllers/use cases)
+├── organization/          ← domínio Organization, CreateOrganizationUseCase, persistência, testes
+├── notification/          ← Kafka (producer/consumer), Spring Mail, Thymeleaf templates, testes
 ├── financial/             ← stub
-├── notification/          ← stub
 └── transparency/          ← stub
 ```
 
 ## Respostas da API
 
-### Sucesso — `ApiResponse<T>`
+### Success — `ApiResponse<T>`
 
 Toda resposta de sucesso é envelopada em `ApiResponse<T>`:
 
@@ -113,7 +114,7 @@ Toda resposta de sucesso é envelopada em `ApiResponse<T>`:
 }
 ```
 
-### Erro — `ErrorResponse`
+### Error — `ErrorResponse`
 
 Erros são tratados exclusivamente pelo `GlobalExceptionHandler` (`@RestControllerAdvice`).
 **Controllers nunca** tratam exceções — apenas lançam. O handler mapeia exceções tipadas
@@ -124,10 +125,14 @@ para `ErrorResponse` com HTTP status apropriado.
 ```
 RuntimeException
 ├── ResourceNotFoundException  (shared) → 404
-│   └── MunicipalityNotFoundException (municipality)
+│   ├── MunicipalityNotFoundException (municipality)
+│   └── OrganizationNotFoundException (organization)
 ├── ConflictException          (shared) → 409
-│   └── DuplicateSubdomainException (municipality)
+│   ├── DuplicateSubdomainException (municipality)
+│   └── DuplicateCnpjException (organization)
 ├── BusinessException          (shared) → 422
+│   ├── InvalidUserRoleAssignmentException (auth)
+│   └── EmailSendFailedException (notification)
 └── Exception                  → 500
 ```
 
@@ -156,6 +161,79 @@ RuntimeException
   "timestamp": "2026-06-20T20:00:00Z"
 }
 ```
+
+## Módulos — visão detalhada
+
+### Municipality (referência canônica)
+
+Módulo mais completo — serve de referência para os demais. Implementa CRUD completo
+com validação de CNPJ via `@CNPJ` (Hibernate Validator), strip de máscara no use case,
+e expõe API cross-module (`MunicipalityDataProvider`) consumida pelo módulo `notification`
+para branding de e-mails (nome e logo da prefeitura).
+
+**Padrão de mapeamento via MapStruct:** entidades JPA precisam de `@Builder`
+(Lombok) para que o MapStruct consiga construir instâncias sem setters públicos.
+O mapper (`*EntityMapper`) é injetado no `*PersistenceAdapter` e contém apenas
+`toEntity()` / `toDomain()` — zero lógica de negócio. Exemplo: `OrganizationEntityMapper`.
+
+### Auth
+
+Domínio de autenticação com `User` e binding de roles:
+
+| Role | `organizationId` |
+|---|---|
+| `SUPER_ADMIN` | deve ser `null` |
+| `MUNICIPALITY_ADM` | deve ser `null` |
+| `ORGANIZATION_MANAGER` | obrigatório |
+| `OPERATOR` | obrigatório |
+
+A validação role-organization ocorre no factory method `User.create()`.
+O construtor de hidratação (all-args público) não valida — permite
+reconstruir qualquer estado vindo da persistência.
+
+Mapeamento `User` ↔ `UserEntity` via MapStruct (`UserMapper`).
+Tabela `users` no schema tenant, `super_admin` no schema `master`.
+
+**Pendente:** controllers, use cases (`RegisterUserUseCase`, etc.),
+`UserDetailsService`, JWT filters, refresh token rotation, CSRF.
+
+### Organization
+
+Entidade de domínio representando ONGs/entidades do terceiro setor:
+
+| Campo | Descrição |
+|---|---|
+| `name` | Nome da organização |
+| `cnpj` | 14 dígitos sem máscara, validado via `@CNPJ` |
+| `status` | `PENDING` (criação), `ACTIVE`, `SUSPENDED` |
+
+`CreateOrganizationUseCase` faz strip da máscara CNPJ e persiste com status `PENDING`.
+Mapeamento `Organization` ↔ `OrganizationEntity` via MapStruct com builder
+(`OrganizationEntityMapper` + `@Builder` na entidade). Tabela `organizations`
+no schema tenant com constraint `UNIQUE(cnpj)`.
+
+**Pendente:** fluxo completo de cadastro público, upload de documentos,
+aprovação pelo ADM, notificações.
+
+### Notification
+
+Infraestrutura de e-mail assíncrono:
+
+| Componente | Função |
+|---|---|
+| `EmailNotification` | Modelo imutável (Jackson-serializable para Kafka) |
+| `NotificationPublisher` | Porta de saída → `EmailNotificationProducer` (Kafka) |
+| `EmailSender` | Porta de saída → `SpringMailEmailSender` (JavaMailSender) |
+| `EmailTemplateRenderer` | Porta de saída → `ThymeleafEmailTemplateRenderer` |
+
+Fluxo: producer serializa `EmailNotification` como JSON → tópico Kafka
+`notification.email` (3 partições, RF 1) → consumer desserializa, resolve
+município via `MunicipalityDataProvider`, renderiza template Thymeleaf
+(conteúdo + layout `base.html` com logo/nome da prefeitura) e dispara e-mail.
+
+O consumer usa `group-id` randômico (UUID) para que toda instância
+receba todas as mensagens. Templates em `mail-templates/` com Thymeleaf
+`SpringTemplateEngine` dedicado (não conflita com templates web).
 
 ## Pré-requisitos
 
@@ -223,8 +301,10 @@ O schema do banco é versionado pelo Flyway. As migrations são separadas por es
 |---|---|
 | V1 | Criação do schema `master` |
 | V2 | Tabela `municipality` (nome, cnpj, subdomain, plan, active) |
-| V3 | Expansão da tabela `municipality` |
-| V4 | Coluna `cnpj` apenas dígitos |
+| V3 | Expansão da tabela `municipality` (name, cnpj, subdomain, plan, active, timestamps) |
+| V4 | Coluna `cnpj` armazenada apenas com dígitos (VARCHAR 14) |
+| V5 | Tabela `super_admin` (name, email, password_hash, active, timestamps) |
+| V6 | Coluna `logo` na tabela `municipality` (VARCHAR 500) |
 
 ### Tenant
 
@@ -232,6 +312,8 @@ O schema do banco é versionado pelo Flyway. As migrations são separadas por es
 |---|---|
 | V1 | Baseline do schema tenant |
 | V2 | Tabela `isolation_record` — validação de isolamento multi-tenant |
+| V3 | Tabela `users` (name, email, password_hash, role, organization_id, active, timestamps) |
+| V4 | Tabela `organizations` (name, cnpj, status, timestamps) — UNIQUE em cnpj |
 
 No startup, o `TenantMigrationStartupRunner` aplica as migrations do master e depois
 itera sobre todos os municípios ativos aplicando as migrations nos schemas tenant.
