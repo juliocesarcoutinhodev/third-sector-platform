@@ -29,7 +29,7 @@ class EmailNotificationConsumer {
         this.objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
     }
 
-    @KafkaListener(topics = KafkaTopicConfig.TOPIC, groupId = "#{T(java.util.UUID).randomUUID().toString()}")
+    @KafkaListener(topics = KafkaTopicConfig.TOPIC, groupId = "${spring.kafka.consumer.group-id}")
     void consume(String message) {
         EmailNotification notification;
         try {

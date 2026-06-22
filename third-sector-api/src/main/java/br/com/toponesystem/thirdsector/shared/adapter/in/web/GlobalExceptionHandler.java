@@ -7,11 +7,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.regex.Pattern;
 
 @Slf4j
 @RestControllerAdvice
@@ -36,6 +39,36 @@ public class GlobalExceptionHandler {
                 .toList();
         return ResponseEntity.badRequest()
                 .body(ErrorResponse.ofValidation(errors));
+    }
+
+    private static final Pattern ENUM_PARSE_ERROR =
+            Pattern.compile("from String \"([^\"]*)\": not one of the values accepted for (?:Enum class|Enum): \\[([^\\]]*)\\]");
+    private static final Pattern FIELD_TYPE =
+            Pattern.compile("type `[^`]*\\.([^`]+)`");
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleMessageNotReadable(HttpMessageNotReadableException ex) {
+        var msg = ex.getMessage();
+        if (msg == null) {
+            return ResponseEntity.badRequest()
+                    .body(ErrorResponse.of(400, "Bad Request", "Requisição com formato inválido."));
+        }
+
+        var matcher = ENUM_PARSE_ERROR.matcher(msg);
+        if (matcher.find()) {
+            var invalidValue = matcher.group(1);
+            var allowedValues = matcher.group(2);
+            var fieldMatcher = FIELD_TYPE.matcher(msg);
+            var fieldName = fieldMatcher.find() ? fieldMatcher.group(1).toLowerCase() : "unknown";
+            var message = String.format("Valor inválido '%s' para o campo '%s'. Valores aceitos: [%s].",
+                    invalidValue, fieldName, allowedValues);
+            return ResponseEntity.badRequest()
+                    .body(ErrorResponse.ofValidation(
+                            java.util.List.of(new ErrorResponse.FieldError(fieldName, message))));
+        }
+
+        return ResponseEntity.badRequest()
+                .body(ErrorResponse.of(400, "Bad Request", "Requisição com formato inválido."));
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
