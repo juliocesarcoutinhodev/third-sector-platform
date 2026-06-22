@@ -80,7 +80,7 @@ class LogoutIntegrationTest extends AbstractIntegrationTest {
         mockMvc.perform(post("/api/auth/logout")
                         .header("Host", TENANT + ".thirdsector.com.br")
                         .cookie(new jakarta.servlet.http.Cookie("refresh_token", refreshToken)))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         mockMvc.perform(post("/api/auth/refresh")
                         .header("Host", TENANT + ".thirdsector.com.br")
@@ -93,7 +93,7 @@ class LogoutIntegrationTest extends AbstractIntegrationTest {
     void logoutWithoutCookiesIsIdempotent() throws Exception {
         mockMvc.perform(post("/api/auth/logout")
                         .header("Host", TENANT + ".thirdsector.com.br"))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -111,7 +111,7 @@ class LogoutIntegrationTest extends AbstractIntegrationTest {
         var logoutResult = mockMvc.perform(post("/api/auth/logout")
                         .header("Host", TENANT + ".thirdsector.com.br")
                         .cookie(new jakarta.servlet.http.Cookie("refresh_token", refreshToken)))
-                .andExpect(status().isOk())
+                .andExpect(status().isNoContent())
                 .andReturn();
 
         var setCookieHeaders = logoutResult.getResponse().getHeaders("Set-Cookie");
@@ -139,11 +139,11 @@ class LogoutIntegrationTest extends AbstractIntegrationTest {
         mockMvc.perform(post("/api/auth/logout")
                         .header("Host", TENANT + ".thirdsector.com.br")
                         .cookie(new jakarta.servlet.http.Cookie("refresh_token", refreshToken)))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         mockMvc.perform(post("/api/auth/logout")
                         .header("Host", TENANT + ".thirdsector.com.br")
                         .cookie(new jakarta.servlet.http.Cookie("refresh_token", refreshToken)))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 }

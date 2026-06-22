@@ -87,12 +87,12 @@ class LoginIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(cookie().exists("access_token"))
                 .andExpect(cookie().httpOnly("access_token", true))
                 .andExpect(cookie().sameSite("access_token", "Lax"))
-                .andExpect(jsonPath("$.userId").isNumber())
-                .andExpect(jsonPath("$.name").value("Carlos Souza"))
-                .andExpect(jsonPath("$.email").value("carlos@example.com"))
-                .andExpect(jsonPath("$.role").value("ORGANIZATION_MANAGER"))
-                .andExpect(jsonPath("$.organizationId").value(1L))
-                .andExpect(jsonPath("$.access_token").doesNotExist());
+                .andExpect(jsonPath("$.data.userId").isNumber())
+                .andExpect(jsonPath("$.data.name").value("Carlos Souza"))
+                .andExpect(jsonPath("$.data.email").value("carlos@example.com"))
+                .andExpect(jsonPath("$.data.role").value("ORGANIZATION_MANAGER"))
+                .andExpect(jsonPath("$.data.organizationId").value(1L))
+                .andExpect(jsonPath("$.data.access_token").doesNotExist());
     }
 
     @Test

@@ -31,7 +31,7 @@ class AuthController {
     private final AuthCookieManager cookieManager;
 
     @PostMapping("/login")
-    ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+    ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         var command = requestMapper.toCommand(request);
         var result = loginUseCase.execute(command);
 
@@ -40,11 +40,11 @@ class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookieManager.buildAccessCookie(tokenPair.accessToken()).toString())
                 .header(HttpHeaders.SET_COOKIE, cookieManager.buildRefreshCookie(tokenPair.refreshToken()).toString())
-                .body(LoginResponse.from(result));
+                .body(ApiResponse.success("Login realizado com sucesso.", LoginResponse.from(result)));
     }
 
     @PostMapping("/refresh")
-    ResponseEntity<LoginResponse> refresh(HttpServletRequest request) {
+    ResponseEntity<ApiResponse<LoginResponse>> refresh(HttpServletRequest request) {
         var refreshTokenValue = cookieManager.extractRefreshToken(request);
 
         var tokenPair = tokenService.rotateRefreshToken(refreshTokenValue);
@@ -52,18 +52,18 @@ class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookieManager.buildAccessCookie(tokenPair.accessToken()).toString())
                 .header(HttpHeaders.SET_COOKIE, cookieManager.buildRefreshCookie(tokenPair.refreshToken()).toString())
-                .body(LoginResponse.empty());
+                .body(ApiResponse.success("Sessão renovada com sucesso.", LoginResponse.empty()));
     }
 
     @PostMapping("/logout")
-    ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
+    ResponseEntity<Void> logout(HttpServletRequest request) {
         var rawToken = cookieManager.extractRefreshTokenOrNull(request);
         logoutUseCase.execute(rawToken);
 
-        return ResponseEntity.ok()
+        return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, cookieManager.clearAccessCookie().toString())
                 .header(HttpHeaders.SET_COOKIE, cookieManager.clearRefreshCookie().toString())
-                .body(ApiResponse.success("Logout realizado com sucesso."));
+                .build();
     }
 
     @PostMapping("/password-reset/request")
