@@ -13,4 +13,6 @@ public interface RefreshTokenRepository {
     void revokeById(Long id);
 
     void revokeByFamilyId(String familyId);
+
+    void revokeByUserId(Long userId);
 }

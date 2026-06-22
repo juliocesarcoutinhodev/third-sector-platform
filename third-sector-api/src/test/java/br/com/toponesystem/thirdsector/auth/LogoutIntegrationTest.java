@@ -86,7 +86,7 @@ class LogoutIntegrationTest extends AbstractIntegrationTest {
                         .header("Host", TENANT + ".thirdsector.com.br")
                         .cookie(new jakarta.servlet.http.Cookie("refresh_token", refreshToken)))
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.message").value("Invalid or expired refresh token"));
+                .andExpect(jsonPath("$.message").value("Token de acesso inválido ou expirado."));
     }
 
     @Test

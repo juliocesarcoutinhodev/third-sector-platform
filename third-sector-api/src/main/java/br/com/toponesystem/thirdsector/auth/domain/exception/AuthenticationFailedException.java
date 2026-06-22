@@ -5,6 +5,6 @@ import br.com.toponesystem.thirdsector.shared.domain.exception.BusinessException
 public class AuthenticationFailedException extends BusinessException {
 
     public AuthenticationFailedException() {
-        super("Invalid email or password");
+        super("E-mail ou senha inválidos.");
     }
 }

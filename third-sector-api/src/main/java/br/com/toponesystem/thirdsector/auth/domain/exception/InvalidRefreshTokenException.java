@@ -5,6 +5,6 @@ import br.com.toponesystem.thirdsector.shared.domain.exception.BusinessException
 public class InvalidRefreshTokenException extends BusinessException {
 
     public InvalidRefreshTokenException() {
-        super("Invalid or expired refresh token");
+        super("Token de acesso inválido ou expirado.");
     }
 }

@@ -5,6 +5,6 @@ import br.com.toponesystem.thirdsector.shared.domain.exception.ConflictException
 public class DuplicateSubdomainException extends ConflictException {
 
     public DuplicateSubdomainException(String subdomain) {
-        super("A municipality with subdomain '" + subdomain + "' already exists");
+        super("Já existe um município com o subdomínio '" + subdomain + "'.");
     }
 }

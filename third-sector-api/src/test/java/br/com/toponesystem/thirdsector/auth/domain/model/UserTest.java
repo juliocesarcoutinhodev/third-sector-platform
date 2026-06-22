@@ -49,7 +49,7 @@ class UserTest {
                 User.create("Admin", "admin@example.com", "hash", Role.SUPER_ADMIN, 5L)
         ).isInstanceOf(InvalidUserRoleAssignmentException.class)
                 .hasMessageContaining("SUPER_ADMIN")
-                .hasMessageContaining("must not have an organization");
+                .hasMessageContaining("não permite vínculo com organização.");
     }
 
     @Test
@@ -58,7 +58,7 @@ class UserTest {
                 User.create("Mun Adm", "munadm@example.com", "hash", Role.MUNICIPALITY_ADM, 5L)
         ).isInstanceOf(InvalidUserRoleAssignmentException.class)
                 .hasMessageContaining("MUNICIPALITY_ADM")
-                .hasMessageContaining("must not have an organization");
+                .hasMessageContaining("não permite vínculo com organização.");
     }
 
     @Test
@@ -67,7 +67,7 @@ class UserTest {
                 User.create("Org Mgr", "orgmgr@example.com", "hash", Role.ORGANIZATION_MANAGER, null)
         ).isInstanceOf(InvalidUserRoleAssignmentException.class)
                 .hasMessageContaining("ORGANIZATION_MANAGER")
-                .hasMessageContaining("requires an organization");
+                .hasMessageContaining("exige vínculo com uma organização.");
     }
 
     @Test
@@ -76,7 +76,7 @@ class UserTest {
                 User.create("Operator", "op@example.com", "hash", Role.OPERATOR, null)
         ).isInstanceOf(InvalidUserRoleAssignmentException.class)
                 .hasMessageContaining("OPERATOR")
-                .hasMessageContaining("requires an organization");
+                .hasMessageContaining("exige vínculo com uma organização.");
     }
 
     @Test

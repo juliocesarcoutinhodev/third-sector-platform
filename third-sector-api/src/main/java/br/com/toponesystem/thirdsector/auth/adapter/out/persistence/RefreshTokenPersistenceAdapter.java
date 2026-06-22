@@ -38,6 +38,12 @@ class RefreshTokenPersistenceAdapter implements RefreshTokenRepository {
         jpaRepo.revokeByFamilyId(familyId);
     }
 
+    @Override
+    @Transactional
+    public void revokeByUserId(Long userId) {
+        jpaRepo.revokeByUserId(userId);
+    }
+
     private RefreshTokenEntity toEntity(RefreshToken domain) {
         return new RefreshTokenEntity(
                 domain.getId(), domain.getUserId(), domain.getTokenHash(),

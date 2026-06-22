@@ -47,6 +47,8 @@ security:
     cookie-secure: false
   refresh-token:
     expiration: 604800000
+  password-reset:
+    expiration: 1800000
 
 minio:
   endpoint: http://localhost:9000

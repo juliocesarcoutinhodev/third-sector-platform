@@ -53,13 +53,13 @@ public class User {
             case SUPER_ADMIN, MUNICIPALITY_ADM -> {
                 if (organizationId != null) {
                     throw new InvalidUserRoleAssignmentException(
-                            "Role " + role + " must not have an organization assigned");
+                            "O papel " + role + " não permite vínculo com organização.");
                 }
             }
             case ORGANIZATION_MANAGER, OPERATOR -> {
                 if (organizationId == null) {
                     throw new InvalidUserRoleAssignmentException(
-                            "Role " + role + " requires an organization to be assigned");
+                            "O papel " + role + " exige vínculo com uma organização.");
                 }
             }
         }

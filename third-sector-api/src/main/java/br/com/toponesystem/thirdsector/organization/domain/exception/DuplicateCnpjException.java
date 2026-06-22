@@ -5,6 +5,6 @@ import br.com.toponesystem.thirdsector.shared.domain.exception.ConflictException
 public class DuplicateCnpjException extends ConflictException {
 
     public DuplicateCnpjException(String cnpj) {
-        super("An organization with CNPJ '" + cnpj + "' already exists");
+        super("Já existe uma organização com o CNPJ '" + cnpj + "'.");
     }
 }

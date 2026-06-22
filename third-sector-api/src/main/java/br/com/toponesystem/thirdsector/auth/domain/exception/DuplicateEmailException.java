@@ -5,6 +5,6 @@ import br.com.toponesystem.thirdsector.shared.domain.exception.ConflictException
 public class DuplicateEmailException extends ConflictException {
 
     public DuplicateEmailException(String email) {
-        super("A user with email '" + email + "' already exists");
+        super("Já existe um usuário com o e-mail '" + email + "'.");
     }
 }

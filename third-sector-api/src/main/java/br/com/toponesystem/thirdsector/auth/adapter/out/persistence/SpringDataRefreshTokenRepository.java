@@ -17,4 +17,8 @@ interface SpringDataRefreshTokenRepository extends JpaRepository<RefreshTokenEnt
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("UPDATE RefreshTokenEntity r SET r.revoked = true WHERE r.familyId = :familyId")
     void revokeByFamilyId(String familyId);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("UPDATE RefreshTokenEntity r SET r.revoked = true WHERE r.userId = :userId")
+    void revokeByUserId(Long userId);
 }

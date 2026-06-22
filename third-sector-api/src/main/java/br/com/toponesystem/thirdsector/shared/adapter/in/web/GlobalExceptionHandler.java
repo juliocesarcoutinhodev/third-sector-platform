@@ -20,13 +20,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ErrorResponse.of(403, "Forbidden", "Access denied"));
+                .body(ErrorResponse.of(403, "Forbidden", "Acesso negado."));
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthentication(AuthenticationException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorResponse.of(401, "Unauthorized", "Authentication required"));
+                .body(ErrorResponse.of(401, "Unauthorized", "Autenticação necessária."));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

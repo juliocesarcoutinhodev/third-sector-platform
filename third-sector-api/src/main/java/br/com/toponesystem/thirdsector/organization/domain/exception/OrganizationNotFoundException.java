@@ -5,6 +5,6 @@ import br.com.toponesystem.thirdsector.shared.domain.exception.ResourceNotFoundE
 public class OrganizationNotFoundException extends ResourceNotFoundException {
 
     public OrganizationNotFoundException(Long id) {
-        super("Organization with id " + id + " not found");
+        super("Organização com id " + id + " não encontrada.");
     }
 }

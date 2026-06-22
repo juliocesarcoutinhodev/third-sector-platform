@@ -113,7 +113,7 @@ class UserRegistrationIntegrationTest extends AbstractIntegrationTest {
                             Role.SUPER_ADMIN, 1L))
             ).isInstanceOf(InvalidUserRoleAssignmentException.class)
                     .hasMessageContaining("SUPER_ADMIN")
-                    .hasMessageContaining("must not have an organization");
+                    .hasMessageContaining("não permite vínculo com organização.");
         } finally {
             TenantContext.clear();
         }
@@ -129,7 +129,7 @@ class UserRegistrationIntegrationTest extends AbstractIntegrationTest {
                             Role.OPERATOR, null))
             ).isInstanceOf(InvalidUserRoleAssignmentException.class)
                     .hasMessageContaining("OPERATOR")
-                    .hasMessageContaining("requires an organization");
+                    .hasMessageContaining("exige vínculo com uma organização.");
         } finally {
             TenantContext.clear();
         }

@@ -104,7 +104,7 @@ class LoginIntegrationTest extends AbstractIntegrationTest {
                                 {"email":"carlos@example.com","password":"SenhaErrada"}"""))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("Invalid email or password"));
+                .andExpect(jsonPath("$.message").value("E-mail ou senha inválidos."));
     }
 
     @Test
@@ -116,7 +116,7 @@ class LoginIntegrationTest extends AbstractIntegrationTest {
                                 {"email":"naoexiste@example.com","password":"Senha123"}"""))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value("Invalid email or password"));
+                .andExpect(jsonPath("$.message").value("E-mail ou senha inválidos."));
     }
 
     @Test
@@ -133,7 +133,7 @@ class LoginIntegrationTest extends AbstractIntegrationTest {
             assertThatThrownBy(() ->
                     loginUseCase.execute(new LoginCommand("inativo@example.com", "Senha789"))
             ).isInstanceOf(AuthenticationFailedException.class)
-                    .hasMessageContaining("Invalid email or password");
+                    .hasMessageContaining("E-mail ou senha inválidos.");
         } finally {
             TenantContext.clear();
         }
