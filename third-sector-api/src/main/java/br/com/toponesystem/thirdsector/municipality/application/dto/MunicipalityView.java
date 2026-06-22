@@ -11,6 +11,7 @@ public record MunicipalityView(
         String cnpj,
         String subdomain,
         Plan plan,
+        String logo,
         boolean active,
         Instant createdAt,
         Instant updatedAt
@@ -19,7 +20,7 @@ public record MunicipalityView(
     public static MunicipalityView from(Municipality m) {
         return new MunicipalityView(
                 m.getId(), m.getName(), m.getCnpj(), m.getSubdomain(),
-                m.getPlan(), m.isActive(), m.getCreatedAt(), m.getUpdatedAt()
+                m.getPlan(), m.getLogo(), m.isActive(), m.getCreatedAt(), m.getUpdatedAt()
         );
     }
 }

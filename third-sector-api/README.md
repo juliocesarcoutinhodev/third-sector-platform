@@ -12,9 +12,10 @@ arquitetura hexagonal + Clean Architecture e modularização via Spring Modulith
 | Cache | Redis |
 | Mensageria | Apache Kafka |
 | Armazenamento | MinIO |
-| Segurança | Spring Security + JWT |
-| E-mail | Spring Mail |
-| Mapeamento | MapStruct |
+| Segurança | Spring Security + JWT (jjwt 0.12.x, HS256) |
+| E-mail | Spring Mail + Thymeleaf |
+| Mapeamento | MapStruct (+ Lombok @Builder para entidades) |
+| Validação | Bean Validation + @CNPJ (Hibernate Validator) |
 | Observabilidade | Actuator + Micrometer + Prometheus |
 | Testes | JUnit 5 + Testcontainers |
 | Arquitetura modular | Spring Modulith |
@@ -83,16 +84,16 @@ br.com.toponesystem.thirdsector
 │   ├── domain/{model, exception, port/out}
 │   ├── application/{MunicipalityView, usecase/}
 │   └── adapter/{in/web, out/persistence}
-├── auth/                  ← stub
-├── organization/          ← stub
+ ├── auth/                  ← domínio User/Role, persistência, testes (sem controllers/use cases)
+├── organization/          ← domínio Organization, CreateOrganizationUseCase, persistência, testes
+├── notification/          ← Kafka (producer/consumer), Spring Mail, Thymeleaf templates, testes
 ├── financial/             ← stub
-├── notification/          ← stub
 └── transparency/          ← stub
 ```
 
 ## Respostas da API
 
-### Sucesso — `ApiResponse<T>`
+### Success — `ApiResponse<T>`
 
 Toda resposta de sucesso é envelopada em `ApiResponse<T>`:
 
@@ -113,7 +114,7 @@ Toda resposta de sucesso é envelopada em `ApiResponse<T>`:
 }
 ```
 
-### Erro — `ErrorResponse`
+### Error — `ErrorResponse`
 
 Erros são tratados exclusivamente pelo `GlobalExceptionHandler` (`@RestControllerAdvice`).
 **Controllers nunca** tratam exceções — apenas lançam. O handler mapeia exceções tipadas
@@ -124,10 +125,19 @@ para `ErrorResponse` com HTTP status apropriado.
 ```
 RuntimeException
 ├── ResourceNotFoundException  (shared) → 404
-│   └── MunicipalityNotFoundException (municipality)
+│   ├── MunicipalityNotFoundException (municipality)
+│   └── OrganizationNotFoundException (organization)
 ├── ConflictException          (shared) → 409
-│   └── DuplicateSubdomainException (municipality)
+│   ├── DuplicateSubdomainException (municipality)
+│   ├── DuplicateCnpjException (organization)
+│   └── DuplicateEmailException (auth)
 ├── BusinessException          (shared) → 422
+│   ├── InvalidUserRoleAssignmentException (auth)
+│   ├── EmailSendFailedException (notification)
+│   ├── AuthenticationFailedException (auth)
+│   └── InvalidRefreshTokenException (auth)
+├── AccessDeniedException      (Spring) → 403
+├── AuthenticationException    (Spring) → 401
 └── Exception                  → 500
 ```
 
@@ -157,11 +167,158 @@ RuntimeException
 }
 ```
 
+## Módulos — visão detalhada
+
+### Municipality (referência canônica)
+
+Módulo mais completo — serve de referência para os demais. Implementa CRUD completo
+com validação de CNPJ via `@CNPJ` (Hibernate Validator), strip de máscara no use case,
+e expõe API cross-module (`MunicipalityDataProvider`) consumida pelo módulo `notification`
+para branding de e-mails (nome e logo da prefeitura).
+
+**Padrão de mapeamento via MapStruct:** entidades JPA precisam de `@Builder`
+(Lombok) para que o MapStruct consiga construir instâncias sem setters públicos.
+O mapper (`*EntityMapper`) é injetado no `*PersistenceAdapter` e contém apenas
+`toEntity()` / `toDomain()` — zero lógica de negócio. Exemplo: `OrganizationEntityMapper`.
+
+### Auth
+
+Domínio de autenticação com `User`, binding de roles e endpoint de login:
+
+**Roles e binding:**
+
+| Role | `organizationId` |
+|---|---|
+| `SUPER_ADMIN` | deve ser `null` |
+| `MUNICIPALITY_ADM` | deve ser `null` |
+| `ORGANIZATION_MANAGER` | obrigatório |
+| `OPERATOR` | obrigatório |
+
+A validação role-organization ocorre no factory method `User.create()`.
+O construtor de hidratação (all-args público) não valida — permite
+reconstruir qualquer estado vindo da persistência.
+
+**Endpoints:**
+
+| Método | Path | Descrição |
+|---|---|---|
+| `POST` | `/api/users` | Cadastro de usuário (BCrypt, evento `UserRegisteredEvent`) |
+| `POST` | `/api/auth/login` | Login (200 + `ApiResponse<LoginResponse>` + cookies) |
+| `POST` | `/api/auth/refresh` | Rotation (200 + `ApiResponse<LoginResponse>` + cookies) |
+| `POST` | `/api/auth/logout` | Logout (204 No Content, limpa cookies, idempotente) |
+| `POST` | `/api/auth/password-reset/request` | Solicita redefinição (200, resposta idêntica exista ou não) |
+| `POST` | `/api/auth/password-reset/confirm` | Confirma com token + nova senha (200) |
+
+**Login:**
+- `LoginUseCase` valida credenciais + usuário ativo, retorna erro genérico
+  (`AuthenticationFailedException`) em todos os casos de falha (evita enumeração de emails)
+- `JjwtTokenGenerator` assina JWT HS256 com claims: `sub` (userId), `role`, `tenantId`, `organizationId`
+- Cookie `access_token`: HttpOnly, Secure (configurável por profile), SameSite=Lax, maxAge = expiração
+- Configuração: `security.jwt.secret` (env `JWT_SECRET`), `security.jwt.expiration` (default 15min)
+- Resposta NUNCA contém o token no body — apenas dados não sensíveis do usuário
+
+**Refresh Token Rotation:**
+- `TokenService` — `createTokenPair(LoginResult)` no login + `rotateRefreshToken(String)` no refresh
+- Refresh token opaco (64 hex chars via `SecureRandom`), hash SHA-256 armazenado no banco
+- Tabela `refresh_token` (tenant schema): id, userId, tokenHash, expiresAt, revoked, familyId
+- Cookie `refresh_token`: HttpOnly, Secure, SameSite=Lax, path=`/api/auth/refresh`, maxAge=7d
+- Rotation: revoga token atual (`revoked=true`), gera novo com mesmo `familyId`
+- Configuração: `security.refresh-token.expiration` (default 604800000ms = 7 dias)
+
+**Detecção de Reuso (Token Theft Detection):**
+- `TokenRevocationService.handleReuse()` — `@Transactional(REQUIRES_NEW)` para commit imediato
+- Ao detectar refresh token já revogado: revoga TODA a família (`revokeByFamilyId`)
+- Publica `SuspiciousTokenReuseDetectedEvent` → listener envia email de alerta ao usuário
+- Após revogação em cascata, todos os tokens da família são rejeitados → novo login obrigatório
+- Template: `mail-templates/suspicious-activity-detected.html` (PT-BR, alerta vermelho)
+
+**Autorização (JWT + @PreAuthorize):**
+- `JwtAuthenticationFilter`: extrai JWT do cookie `access_token`, valida assinatura HS256,
+  popula `SecurityContext` com `TenantAuthenticationToken` (userId, role, tenantId, organizationId)
+- `@EnableMethodSecurity` + `@PreAuthorize` nos endpoints protegidos
+- `ScopeAuthorization` (`@scope` SpEL): `isOrganizationMember()` e `isSameTenant()`
+- Regras: SUPER_ADMIN irrestrito, MUNICIPALITY_ADM restrito ao próprio tenant,
+  ORGANIZATION_MANAGER/OPERATOR restritos ao próprio organizationId
+- Erros: 401 Unauthorized (sem token), 403 Forbidden (sem permissão) — via `GlobalExceptionHandler`
+- Endpoints públicos: `/api/auth/**`, actuator, swagger — whitelistados no `SecurityConfig`
+
+**Password Reset:**
+- `POST /api/auth/password-reset/request`: resposta idêntica para email existente ou não (evita enumeração)
+- Token de uso único, SHA-256 hash no banco, 30min TTL (configurável)
+- Nova solicitação invalida tokens anteriores do mesmo usuário (`invalidateByUserId`)
+- `POST /api/auth/password-reset/confirm`: valida token + nova senha (mesmas regras da story 2.4)
+- Ao confirmar: `revokeByUserId` — todas as famílias de refresh token do usuário são revogadas
+- Evento `PasswordResetRequestedEvent` → listener envia email com token (template `password-reset.html`)
+- Tabela `password_reset_token` (tenant schema, migration V7)
+- Configuração: `security.password-reset.expiration` (default 1800000ms = 30min)
+
+**Padrão REST:**
+- Respostas de sucesso usam envelope `ApiResponse<T>` (`{"success":true,"message":"...","data":{...}}`)
+- Login/refresh: `ApiResponse<LoginResponse>` com dados do usuário em `data`
+- Logout: `204 No Content` (sem corpo, apenas cookies com `Max-Age=0`)
+- Mensagens de erro e sucesso em português (exceções, 401, 403)
+
+**Pendente:** `UserDetailsService`, CSRF protection.
+
+### Organization
+
+Entidade de domínio representando ONGs/entidades do terceiro setor:
+
+| Campo | Descrição |
+|---|---|
+| `name` | Nome da organização |
+| `cnpj` | 14 dígitos sem máscara, validado via `@CNPJ` |
+| `status` | `PENDING` (criação), `ACTIVE`, `SUSPENDED` |
+
+`CreateOrganizationUseCase` faz strip da máscara CNPJ e persiste com status `PENDING`.
+Mapeamento `Organization` ↔ `OrganizationEntity` via MapStruct com builder
+(`OrganizationEntityMapper` + `@Builder` na entidade). Tabela `organizations`
+no schema tenant com constraint `UNIQUE(cnpj)`.
+
+**Pendente:** fluxo completo de cadastro público, upload de documentos,
+aprovação pelo ADM, notificações.
+
+### Notification
+
+Infraestrutura de e-mail assíncrono:
+
+| Componente | Função |
+|---|---|
+| `EmailNotification` | Modelo imutável (Jackson-serializable para Kafka) |
+| `NotificationPublisher` | Porta de saída → `EmailNotificationProducer` (Kafka) |
+| `EmailSender` | Porta de saída → `SpringMailEmailSender` (JavaMailSender) |
+| `EmailTemplateRenderer` | Porta de saída → `ThymeleafEmailTemplateRenderer` |
+
+Fluxo: producer serializa `EmailNotification` como JSON → tópico Kafka
+`notification.email` (3 partições, RF 1) → consumer desserializa, resolve
+município via `MunicipalityDataProvider`, renderiza template Thymeleaf
+(conteúdo + layout `base.html` com logo/nome da prefeitura) e dispara e-mail.
+
+O consumer usa `group-id` randômico (UUID) para que toda instância
+receba todas as mensagens. Templates em `mail-templates/` com Thymeleaf
+`SpringTemplateEngine` dedicado (não conflita com templates web).
+
 ## Pré-requisitos
 
 - Java 25+
 - Maven 3.9+
 - Docker e Docker Compose (para infraestrutura local)
+
+## Dados de desenvolvimento (seed)
+
+Ao subir com profile `dev`, o `DevDataSeeder` cria automaticamente:
+
+| Entidade | Identificador | Credenciais / Dados |
+|---|---|---|
+| Município | subdomínio `maringa` | CNPJ `11222333000181`, plano BASIC |
+| ADM da Prefeitura | `admin@dev.local` | Senha `AdminDev1`, role `MUNICIPALITY_ADM` |
+| Organização | id `1` | CNPJ `12345678000195`, "Organização de Teste (Dev)" |
+| Gestor da Organização | `manager@dev.local` | Senha `ManagerDev1`, role `ORGANIZATION_MANAGER` |
+
+**Ordem de criação:** município → migration do schema → ADM → organização → gestor.
+**Idempotente:** reiniciar a aplicação não duplica registros.
+
+As credenciais estão disponíveis como variáveis de collection no Postman (`adminEmail`, `adminPassword`, `managerEmail`, `managerPassword`).
 
 ## Configuração local
 
@@ -223,8 +380,10 @@ O schema do banco é versionado pelo Flyway. As migrations são separadas por es
 |---|---|
 | V1 | Criação do schema `master` |
 | V2 | Tabela `municipality` (nome, cnpj, subdomain, plan, active) |
-| V3 | Expansão da tabela `municipality` |
-| V4 | Coluna `cnpj` apenas dígitos |
+| V3 | Expansão da tabela `municipality` (name, cnpj, subdomain, plan, active, timestamps) |
+| V4 | Coluna `cnpj` armazenada apenas com dígitos (VARCHAR 14) |
+| V5 | Tabela `super_admin` (name, email, password_hash, active, timestamps) |
+| V6 | Coluna `logo` na tabela `municipality` (VARCHAR 500) |
 
 ### Tenant
 
@@ -232,6 +391,11 @@ O schema do banco é versionado pelo Flyway. As migrations são separadas por es
 |---|---|
 | V1 | Baseline do schema tenant |
 | V2 | Tabela `isolation_record` — validação de isolamento multi-tenant |
+| V3 | Tabela `users` (name, email, password_hash, role, organization_id, active, timestamps) |
+| V4 | Tabela `organizations` (name, cnpj, status, timestamps) — UNIQUE em cnpj |
+| V5 | Tabela `event_publication` — registro de eventos do Spring Modulith |
+| V6 | Tabela `refresh_token` — tokenHash SHA-256, revoked, familyId, índice em token_hash |
+| V7 | Tabela `password_reset_token` — tokenHash SHA-256, usado, userId, índice em token_hash |
 
 No startup, o `TenantMigrationStartupRunner` aplica as migrations do master e depois
 itera sobre todos os municípios ativos aplicando as migrations nos schemas tenant.

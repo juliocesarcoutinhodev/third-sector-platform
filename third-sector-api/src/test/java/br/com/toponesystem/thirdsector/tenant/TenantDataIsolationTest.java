@@ -1,6 +1,7 @@
 package br.com.toponesystem.thirdsector.tenant;
 
 import br.com.toponesystem.thirdsector.AbstractIntegrationTest;
+import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityCommand;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityUseCase;
 import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 import br.com.toponesystem.thirdsector.tenant.adapter.out.migration.TenantMigrationService;
@@ -41,8 +42,10 @@ class TenantDataIsolationTest extends AbstractIntegrationTest {
 
     @BeforeAll
     void setUpTenants() {
-        registerUseCase.execute("Alpha Municipality", CNPJ_A, TENANT_A, Plan.BASIC);
-        registerUseCase.execute("Beta Municipality", CNPJ_B, TENANT_B, Plan.BASIC);
+        registerUseCase.execute(new RegisterMunicipalityCommand(
+                "Alpha Municipality", CNPJ_A, TENANT_A, Plan.BASIC, null));
+        registerUseCase.execute(new RegisterMunicipalityCommand(
+                "Beta Municipality", CNPJ_B, TENANT_B, Plan.BASIC, null));
 
         migrationService.migrate(TENANT_A);
         migrationService.migrate(TENANT_B);
