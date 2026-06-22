@@ -304,6 +304,22 @@ receba todas as mensagens. Templates em `mail-templates/` com Thymeleaf
 - Maven 3.9+
 - Docker e Docker Compose (para infraestrutura local)
 
+## Dados de desenvolvimento (seed)
+
+Ao subir com profile `dev`, o `DevDataSeeder` cria automaticamente:
+
+| Entidade | Identificador | Credenciais / Dados |
+|---|---|---|
+| Município | subdomínio `maringa` | CNPJ `11222333000181`, plano BASIC |
+| ADM da Prefeitura | `admin@dev.local` | Senha `AdminDev1`, role `MUNICIPALITY_ADM` |
+| Organização | id `1` | CNPJ `12345678000195`, "Organização de Teste (Dev)" |
+| Gestor da Organização | `manager@dev.local` | Senha `ManagerDev1`, role `ORGANIZATION_MANAGER` |
+
+**Ordem de criação:** município → migration do schema → ADM → organização → gestor.
+**Idempotente:** reiniciar a aplicação não duplica registros.
+
+As credenciais estão disponíveis como variáveis de collection no Postman (`adminEmail`, `adminPassword`, `managerEmail`, `managerPassword`).
+
 ## Configuração local
 
 ### 1. Infraestrutura e variáveis de ambiente
