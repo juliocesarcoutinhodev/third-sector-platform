@@ -4,6 +4,7 @@ import br.com.toponesystem.thirdsector.municipality.domain.model.Municipality;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface MunicipalityRepository {
 
@@ -13,7 +14,7 @@ public interface MunicipalityRepository {
 
     boolean existsBySubdomain(String subdomain);
 
-    Optional<Municipality> findById(Long id);
+    Optional<Municipality> findById(UUID id);
 
     List<Municipality> findAllActive();
 }

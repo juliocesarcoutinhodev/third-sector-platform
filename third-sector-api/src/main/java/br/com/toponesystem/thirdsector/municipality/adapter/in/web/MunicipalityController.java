@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/municipalities")
@@ -44,7 +45,7 @@ class MunicipalityController {
     }
 
     @GetMapping("/{id}")
-    ResponseEntity<ApiResponse<MunicipalityView>> findById(@PathVariable Long id) {
+    ResponseEntity<ApiResponse<MunicipalityView>> findById(@PathVariable UUID id) {
         var view = findByIdUseCase.execute(id);
         return ResponseEntity.ok(ApiResponse.success("Município encontrado.", view));
     }

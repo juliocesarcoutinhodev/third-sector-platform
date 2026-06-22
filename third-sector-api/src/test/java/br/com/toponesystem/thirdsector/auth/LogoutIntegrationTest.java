@@ -21,6 +21,8 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -31,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class LogoutIntegrationTest extends AbstractIntegrationTest {
 
     private static final String TENANT = "logout-test";
+    private static final UUID TEST_ORG_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
     @DynamicPropertySource
     static void registerTenant(DynamicPropertyRegistry registry) {
@@ -61,7 +64,7 @@ class LogoutIntegrationTest extends AbstractIntegrationTest {
         createOrganization.execute(new CreateOrganizationCommand("Logout ONG", "12345678000195"));
         createUserUseCase.execute(new CreateUserCommand(
                 "Diana Melo", "diana@example.com", "Senha123",
-                Role.ORGANIZATION_MANAGER, 1L));
+                Role.ORGANIZATION_MANAGER, TEST_ORG_ID));
         TenantContext.clear();
     }
 

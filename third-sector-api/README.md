@@ -8,7 +8,7 @@ arquitetura hexagonal + Clean Architecture e modularização via Spring Modulith
 | Camada | Tecnologia |
 |---|---|
 | Runtime | Java 25 + Spring Boot 4 |
-| Persistência | PostgreSQL + Spring Data JPA + Flyway |
+| Persistência | PostgreSQL 18 + Spring Data JPA + Flyway |
 | Cache | Redis |
 | Mensageria | Apache Kafka |
 | Armazenamento | MinIO |
@@ -19,6 +19,12 @@ arquitetura hexagonal + Clean Architecture e modularização via Spring Modulith
 | Observabilidade | Actuator + Micrometer + Prometheus |
 | Testes | JUnit 5 + Testcontainers |
 | Arquitetura modular | Spring Modulith |
+
+### IDs — UUID v7
+
+Todos os identificadores primários são UUID v7 (time-ordered), gerados pelo Hibernate via
+`@UuidGenerator(style = VERSION_7)` e com `DEFAULT uuidv7()` no PostgreSQL como fallback.
+IDs são serializados como strings no formato UUID padrão (ex: `"0193a800-0000-7000-8000-000000000001"`).
 
 ## Arquitetura
 
@@ -102,7 +108,7 @@ Toda resposta de sucesso é envelopada em `ApiResponse<T>`:
   "success": true,
   "message": "Município cadastrado com sucesso.",
   "data": {
-    "id": 1,
+    "id": "0193a800-0000-7000-8000-000000000001",
     "name": "Maringá",
     "cnpj": "11222333000181",
     "subdomain": "maringa",
@@ -312,7 +318,7 @@ Ao subir com profile `dev`, o `DevDataSeeder` cria automaticamente:
 |---|---|---|
 | Município | subdomínio `maringa` | CNPJ `11222333000181`, plano BASIC |
 | ADM da Prefeitura | `admin@dev.local` | Senha `AdminDev1`, role `MUNICIPALITY_ADM` |
-| Organização | id `1` | CNPJ `12345678000195`, "Organização de Teste (Dev)" |
+| Organização | CNPJ `12345678000195` | "Organização de Teste (Dev)" |
 | Gestor da Organização | `manager@dev.local` | Senha `ManagerDev1`, role `ORGANIZATION_MANAGER` |
 
 **Ordem de criação:** município → migration do schema → ADM → organização → gestor.

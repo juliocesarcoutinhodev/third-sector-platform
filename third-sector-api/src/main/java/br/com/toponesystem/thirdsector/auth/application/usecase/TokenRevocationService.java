@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ class TokenRevocationService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void handleReuse(Long userId, String familyId) {
+    public void handleReuse(UUID userId, String familyId) {
         refreshTokenRepository.revokeByFamilyId(familyId);
 
         var user = userRepository.findById(userId).orElse(null);

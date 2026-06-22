@@ -17,6 +17,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.UUID;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -36,10 +37,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (token != null) {
             try {
                 var claims = parseToken(token);
-                var userId = Long.parseLong(claims.getSubject());
+                var userId = UUID.fromString(claims.getSubject());
                 var role = claims.get("role", String.class);
                 var tenantId = claims.get("tenantId", String.class);
-                var organizationId = claims.get("organizationId", Long.class);
+                var orgIdStr = claims.get("organizationId", String.class);
+                var organizationId = orgIdStr != null ? UUID.fromString(orgIdStr) : null;
 
                 var auth = new TenantAuthenticationToken(userId, role, tenantId, organizationId);
                 SecurityContextHolder.getContext().setAuthentication(auth);

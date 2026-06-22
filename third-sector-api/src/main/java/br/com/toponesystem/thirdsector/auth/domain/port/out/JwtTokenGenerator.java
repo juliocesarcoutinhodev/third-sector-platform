@@ -1,6 +1,8 @@
 package br.com.toponesystem.thirdsector.auth.domain.port.out;
 
+import java.util.UUID;
+
 public interface JwtTokenGenerator {
 
-    String generate(Long userId, String role, String tenantId, Long organizationId);
+    String generate(UUID userId, String role, String tenantId, UUID organizationId);
 }

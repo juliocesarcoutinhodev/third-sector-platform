@@ -9,6 +9,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 class JjwtTokenGenerator implements JwtTokenGenerator {
@@ -24,7 +25,7 @@ class JjwtTokenGenerator implements JwtTokenGenerator {
     }
 
     @Override
-    public String generate(Long userId, String role, String tenantId, Long organizationId) {
+    public String generate(UUID userId, String role, String tenantId, UUID organizationId) {
         var now = Instant.now();
 
         var builder = Jwts.builder()
@@ -35,7 +36,7 @@ class JjwtTokenGenerator implements JwtTokenGenerator {
                 .expiration(Date.from(now.plusMillis(properties.expiration())));
 
         if (organizationId != null) {
-            builder.claim("organizationId", organizationId);
+            builder.claim("organizationId", organizationId.toString());
         }
 
         return builder.signWith(signingKey).compact();

@@ -3,7 +3,7 @@
 DROP TABLE IF EXISTS municipality;
 
 CREATE TABLE municipality (
-    id         BIGSERIAL     PRIMARY KEY,
+    id         UUID          PRIMARY KEY DEFAULT uuidv7(),
     name       VARCHAR(255)  NOT NULL,
     cnpj       VARCHAR(18)   NOT NULL UNIQUE,
     subdomain  VARCHAR(63)   NOT NULL UNIQUE,

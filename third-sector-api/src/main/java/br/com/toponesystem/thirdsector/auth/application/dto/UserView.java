@@ -4,13 +4,14 @@ import br.com.toponesystem.thirdsector.auth.domain.model.Role;
 import br.com.toponesystem.thirdsector.auth.domain.model.User;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record UserView(
-        Long id,
+        UUID id,
         String name,
         String email,
         Role role,
-        Long organizationId,
+        UUID organizationId,
         boolean active,
         Instant createdAt
 ) {

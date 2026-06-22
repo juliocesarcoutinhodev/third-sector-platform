@@ -4,9 +4,10 @@ import br.com.toponesystem.thirdsector.organization.domain.model.Organization;
 import br.com.toponesystem.thirdsector.organization.domain.model.OrganizationStatus;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record OrganizationView(
-        Long id,
+        UUID id,
         String name,
         String cnpj,
         OrganizationStatus status,

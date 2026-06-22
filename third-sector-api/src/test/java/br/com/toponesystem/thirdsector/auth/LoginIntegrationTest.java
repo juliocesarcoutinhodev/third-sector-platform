@@ -24,6 +24,8 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -36,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class LoginIntegrationTest extends AbstractIntegrationTest {
 
     private static final String TENANT = "maringa";
+    private static final UUID TEST_ORG_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
     @Autowired
     private RegisterMunicipalityUseCase registerMunicipality;
@@ -67,7 +70,7 @@ class LoginIntegrationTest extends AbstractIntegrationTest {
         createOrganization.execute(new CreateOrganizationCommand("Login ONG", "12345678000195"));
         createUserUseCase.execute(new CreateUserCommand(
                 "Carlos Souza", "carlos@example.com", "Senha123",
-                Role.ORGANIZATION_MANAGER, 1L));
+                Role.ORGANIZATION_MANAGER, TEST_ORG_ID));
         TenantContext.clear();
     }
 
@@ -87,11 +90,11 @@ class LoginIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(cookie().exists("access_token"))
                 .andExpect(cookie().httpOnly("access_token", true))
                 .andExpect(cookie().sameSite("access_token", "Lax"))
-                .andExpect(jsonPath("$.data.userId").isNumber())
+                .andExpect(jsonPath("$.data.userId").isNotEmpty())
                 .andExpect(jsonPath("$.data.name").value("Carlos Souza"))
                 .andExpect(jsonPath("$.data.email").value("carlos@example.com"))
                 .andExpect(jsonPath("$.data.role").value("ORGANIZATION_MANAGER"))
-                .andExpect(jsonPath("$.data.organizationId").value(1L))
+                .andExpect(jsonPath("$.data.organizationId").value(TEST_ORG_ID.toString()))
                 .andExpect(jsonPath("$.data.access_token").doesNotExist());
     }
 
@@ -125,7 +128,7 @@ class LoginIntegrationTest extends AbstractIntegrationTest {
         try {
             createUserUseCase.execute(new CreateUserCommand(
                     "Inativo Silva", "inativo@example.com", "Senha789",
-                    Role.OPERATOR, 1L));
+                    Role.OPERATOR, TEST_ORG_ID));
 
             jdbcTemplate.execute("SET search_path TO \"" + TENANT + "\"");
             jdbcTemplate.update("UPDATE users SET active = false WHERE email = ?", "inativo@example.com");

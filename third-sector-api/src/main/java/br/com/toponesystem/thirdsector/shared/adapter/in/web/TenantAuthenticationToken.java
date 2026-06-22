@@ -4,15 +4,16 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collections;
+import java.util.UUID;
 
 public class TenantAuthenticationToken extends AbstractAuthenticationToken {
 
-    private final Long userId;
+    private final UUID userId;
     private final String role;
     private final String tenantId;
-    private final Long organizationId;
+    private final UUID organizationId;
 
-    public TenantAuthenticationToken(Long userId, String role, String tenantId, Long organizationId) {
+    public TenantAuthenticationToken(UUID userId, String role, String tenantId, UUID organizationId) {
         super(Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role)));
         this.userId = userId;
         this.role = role;
@@ -39,7 +40,7 @@ public class TenantAuthenticationToken extends AbstractAuthenticationToken {
         return tenantId;
     }
 
-    public Long getOrganizationId() {
+    public UUID getOrganizationId() {
         return organizationId;
     }
 }

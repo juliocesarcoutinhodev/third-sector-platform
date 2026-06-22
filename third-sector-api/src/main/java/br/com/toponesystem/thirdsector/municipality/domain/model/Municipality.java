@@ -3,11 +3,12 @@ package br.com.toponesystem.thirdsector.municipality.domain.model;
 import lombok.Getter;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 public class Municipality {
 
-    private Long id;
+    private UUID id;
     private String name;
     private String cnpj;
     private String subdomain;
@@ -28,7 +29,7 @@ public class Municipality {
         this.updatedAt = Instant.now();
     }
 
-    public Municipality(Long id, String name, String cnpj, String subdomain, Plan plan,
+    public Municipality(UUID id, String name, String cnpj, String subdomain, Plan plan,
                         String logo, boolean active, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.name = name;

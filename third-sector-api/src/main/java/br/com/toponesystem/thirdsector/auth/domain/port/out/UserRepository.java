@@ -3,6 +3,7 @@ package br.com.toponesystem.thirdsector.auth.domain.port.out;
 import br.com.toponesystem.thirdsector.auth.domain.model.User;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public interface UserRepository {
 
@@ -12,5 +13,5 @@ public interface UserRepository {
 
     boolean existsByEmail(String email);
 
-    Optional<User> findById(Long id);
+    Optional<User> findById(UUID id);
 }

@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -14,7 +16,7 @@ public class FindMunicipalityByIdUseCase {
 
     private final MunicipalityRepository repository;
 
-    public MunicipalityView execute(Long id) {
+    public MunicipalityView execute(UUID id) {
         return repository.findById(id)
                 .map(MunicipalityView::from)
                 .orElseThrow(() -> new MunicipalityNotFoundException(id));

@@ -2,13 +2,15 @@ package br.com.toponesystem.thirdsector.auth.adapter.in.web;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.UUID;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 record LoginResponse(
-        Long userId,
+        UUID userId,
         String name,
         String email,
         String role,
-        Long organizationId
+        UUID organizationId
 ) {
 
     static LoginResponse from(br.com.toponesystem.thirdsector.auth.application.dto.LoginResult result) {

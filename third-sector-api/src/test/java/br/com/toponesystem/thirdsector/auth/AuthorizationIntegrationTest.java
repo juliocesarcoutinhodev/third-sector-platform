@@ -21,6 +21,8 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,6 +32,8 @@ class AuthorizationIntegrationTest extends AbstractIntegrationTest {
 
     private static final String TENANT_X = "auth-tenant-x";
     private static final String TENANT_Y = "auth-tenant-y";
+    private static final UUID ORG_ALPHA_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final UUID ORG_BETA_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
 
     @DynamicPropertySource
     static void registerTenants(DynamicPropertyRegistry registry) {
@@ -67,7 +71,7 @@ class AuthorizationIntegrationTest extends AbstractIntegrationTest {
         createUserUseCase.execute(new CreateUserCommand(
                 "Admin X", "adminx@t.com", "Senha123", Role.MUNICIPALITY_ADM, null));
         createUserUseCase.execute(new CreateUserCommand(
-                "Manager Alpha", "mgr-alpha@t.com", "Senha123", Role.ORGANIZATION_MANAGER, 1L));
+                "Manager Alpha", "mgr-alpha@t.com", "Senha123", Role.ORGANIZATION_MANAGER, ORG_ALPHA_ID));
         createUserUseCase.execute(new CreateUserCommand(
                 "Super Admin", "super@t.com", "Senha123", Role.SUPER_ADMIN, null));
         TenantContext.clear();
@@ -99,7 +103,7 @@ class AuthorizationIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"name":"Hacker","email":"hacker@t.com","password":"Senha999",
-                                 "role":"OPERATOR","organizationId":2}"""))
+                                 "role":"OPERATOR","organizationId":"00000000-0000-0000-0000-000000000002"}"""))
                 .andExpect(status().isForbidden());
     }
 
@@ -113,7 +117,7 @@ class AuthorizationIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"name":"New Op","email":"newop@t.com","password":"Senha999",
-                                 "role":"OPERATOR","organizationId":1}"""))
+                                 "role":"OPERATOR","organizationId":"00000000-0000-0000-0000-000000000001"}"""))
                 .andExpect(status().isCreated());
     }
 
@@ -127,7 +131,7 @@ class AuthorizationIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"name":"Cross","email":"cross@t.com","password":"Senha999",
-                                 "role":"OPERATOR","organizationId":1}"""))
+                                 "role":"OPERATOR","organizationId":"00000000-0000-0000-0000-000000000001"}"""))
                 .andExpect(status().isForbidden());
     }
 
@@ -141,7 +145,7 @@ class AuthorizationIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"name":"New MunUser","email":"munuser@t.com","password":"Senha999",
-                                 "role":"OPERATOR","organizationId":1}"""))
+                                 "role":"OPERATOR","organizationId":"00000000-0000-0000-0000-000000000001"}"""))
                 .andExpect(status().isCreated());
     }
 
@@ -155,7 +159,7 @@ class AuthorizationIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"name":"Super Created","email":"supercreated@t.com","password":"Senha999",
-                                 "role":"OPERATOR","organizationId":1}"""))
+                                 "role":"OPERATOR","organizationId":"00000000-0000-0000-0000-000000000001"}"""))
                 .andExpect(status().isCreated());
     }
 
@@ -166,7 +170,7 @@ class AuthorizationIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"name":"NoAuth","email":"noauth@t.com","password":"Senha999",
-                                 "role":"OPERATOR","organizationId":1}"""))
+                                 "role":"OPERATOR","organizationId":"00000000-0000-0000-0000-000000000001"}"""))
                 .andExpect(status().isForbidden());
     }
 }

@@ -4,6 +4,8 @@ import br.com.toponesystem.thirdsector.tenant.application.api.TenantProvider;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component("scope")
 public class ScopeAuthorization {
 
@@ -24,7 +26,7 @@ public class ScopeAuthorization {
         return false;
     }
 
-    public boolean isOrganizationMember(Long organizationId) {
+    public boolean isOrganizationMember(UUID organizationId) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof TenantAuthenticationToken token) {
             if ("SUPER_ADMIN".equals(token.getRole())) {

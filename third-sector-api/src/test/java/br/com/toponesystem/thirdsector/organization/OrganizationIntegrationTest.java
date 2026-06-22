@@ -57,6 +57,19 @@ class OrganizationIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void generatesUuidVersion7() {
+        TenantContext.setCurrentTenant(TENANT_X);
+        try {
+            var view = createOrganizationUseCase.execute(new CreateOrganizationCommand("V7 Test Org", validCnpj(System.nanoTime())));
+
+            assertThat(view.id()).isNotNull();
+            assertThat(view.id().version()).isEqualTo(7);
+        } finally {
+            TenantContext.clear();
+        }
+    }
+
+    @Test
     void createsAndFindsOrganizationWithinTenant() {
         TenantContext.setCurrentTenant(TENANT_X);
         try {

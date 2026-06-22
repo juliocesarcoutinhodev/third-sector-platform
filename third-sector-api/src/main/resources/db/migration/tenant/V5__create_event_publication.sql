@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS event_publication (
-    id                      UUID            PRIMARY KEY,
+    id                      UUID            PRIMARY KEY DEFAULT uuidv7(),
     publication_date        TIMESTAMPTZ     NOT NULL,
     listener_id             VARCHAR(512)    NOT NULL,
     serialized_event        TEXT            NOT NULL,

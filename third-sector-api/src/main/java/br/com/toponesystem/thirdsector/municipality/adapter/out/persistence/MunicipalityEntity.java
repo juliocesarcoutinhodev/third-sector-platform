@@ -9,9 +9,11 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.validator.constraints.br.CNPJ;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "municipality", schema = "master")
@@ -21,8 +23,8 @@ import java.time.Instant;
 class MunicipalityEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
+    private UUID id;
 
     @NotBlank
     @Size(max = 255)

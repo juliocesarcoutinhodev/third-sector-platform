@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -28,7 +29,7 @@ class PasswordResetTokenPersistenceAdapter implements PasswordResetTokenReposito
 
     @Override
     @Transactional
-    public void invalidateByUserId(Long userId) {
+    public void invalidateByUserId(UUID userId) {
         jpaRepo.invalidateByUserId(userId);
     }
 

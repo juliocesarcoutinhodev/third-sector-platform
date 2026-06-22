@@ -8,6 +8,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -28,7 +29,7 @@ class OrganizationPersistenceAdapter implements OrganizationRepository {
     }
 
     @Override
-    public Optional<Organization> findById(Long id) {
+    public Optional<Organization> findById(UUID id) {
         return jpaRepo.findById(id).map(mapper::toDomain);
     }
 

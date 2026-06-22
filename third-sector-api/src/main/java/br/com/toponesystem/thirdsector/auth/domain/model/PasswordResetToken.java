@@ -3,18 +3,19 @@ package br.com.toponesystem.thirdsector.auth.domain.model;
 import lombok.Getter;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 public class PasswordResetToken {
 
-    private Long id;
-    private Long userId;
+    private UUID id;
+    private UUID userId;
     private String tokenHash;
     private Instant expiresAt;
     private boolean used;
     private Instant createdAt;
 
-    public PasswordResetToken(Long userId, String tokenHash, Instant expiresAt) {
+    public PasswordResetToken(UUID userId, String tokenHash, Instant expiresAt) {
         this.userId = userId;
         this.tokenHash = tokenHash;
         this.expiresAt = expiresAt;
@@ -22,7 +23,7 @@ public class PasswordResetToken {
         this.createdAt = Instant.now();
     }
 
-    public PasswordResetToken(Long id, Long userId, String tokenHash, Instant expiresAt,
+    public PasswordResetToken(UUID id, UUID userId, String tokenHash, Instant expiresAt,
                                boolean used, Instant createdAt) {
         this.id = id;
         this.userId = userId;

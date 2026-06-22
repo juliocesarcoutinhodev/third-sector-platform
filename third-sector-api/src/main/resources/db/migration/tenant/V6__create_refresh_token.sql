@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS refresh_token (
-    id              BIGSERIAL       PRIMARY KEY,
-    user_id         BIGINT          NOT NULL,
+    id              UUID            PRIMARY KEY DEFAULT uuidv7(),
+    user_id         UUID            NOT NULL,
     token_hash      VARCHAR(64)     NOT NULL,
     expires_at      TIMESTAMPTZ     NOT NULL,
     revoked         BOOLEAN         NOT NULL DEFAULT false,
