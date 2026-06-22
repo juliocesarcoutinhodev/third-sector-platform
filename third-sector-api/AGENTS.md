@@ -24,7 +24,17 @@ The platform has three components in this monorepo, but this file governs only t
 3. **One use case = one class** for non-trivial application logic (e.g. `ApproveEntryUseCase`,
    `CreateMunicipalityUseCase`). Simple CRUD-like operations can live in a straightforward
    `*Service` class — don't force a use-case class for trivial operations.
-4. **Modular monolith via Spring Modulith.** The application is organized into modules:
+4. **Use cases NEVER accept a list of loose primitive parameters.** Any use case taking more
+   than one argument must receive a single typed input object (a `Command` or `Input` record,
+   e.g. `CreateUserCommand`, `ApproveEntryCommand`), defined in the `application` layer — never
+   `execute(String name, String email, String password, Role role, Long organizationId)`. This
+   applies regardless of how few parameters exist today: a method with 3 primitive parameters
+   grows into 10, then 30, and positional primitive arguments of the same type (e.g. two
+   `String` fields) are a silent bug risk if ever reordered, with no compiler safety net.
+   Controllers map their incoming request DTO into this Command via MapStruct (see the mapping
+   rule below) — never by manually unpacking `request.field()` calls into a multi-argument method
+   call.
+5. **Modular monolith via Spring Modulith.** The application is organized into modules:
    `tenant`, `auth`, `municipality`, `organization`, `financial`, `notification`, `transparency`,
    and a minimal `shared` kernel. Modules must NEVER import internal classes from another module
    directly. Cross-module communication happens through:
@@ -34,14 +44,39 @@ The platform has three components in this monorepo, but this file governs only t
    Every module package must have a `package-info.java`. Any change must keep
    `ApplicationModules.of(...).verify()` passing — never weaken or skip this test to make code
    compile.
-5. **Multi-tenancy is schema-per-tenant**, one PostgreSQL schema per municipality. The tenant
+6. **Multi-tenancy is schema-per-tenant**, one PostgreSQL schema per municipality. The tenant
    concept maps to the `Municipality` entity. Tenant resolution flows through:
    `TenantFilter` (resolves from subdomain, never trusts client-supplied headers in prod) →
    `TenantContext` (ThreadLocal) → Hibernate's `CurrentTenantIdentifierResolver` /
    `MultiTenantConnectionProvider`. Async code (`@Async`, Modulith listeners) MUST go through the
    `TaskDecorator` that propagates `TenantContext` — never assume a new thread inherits tenant
    context automatically. A `master` schema holds cross-tenant data only (municipalities, plans).
-   Never let a query silently fall back to a default schema when no tenant is set — fail fast.
+    Never let a query silently fall back to a default schema when no tenant is set — fail fast.
+6. **Use Command records for Use Case inputs.** Every use case that creates or mutates data MUST
+   receive a single `record` (e.g. `CreateUserCommand`, `RegisterMunicipalityCommand`) instead
+   of multiple primitive parameters. The adapter layer uses MapStruct mappers
+   (`*Request → *Command`) to convert request DTOs into Commands. The controller becomes:
+   validate request → `mapper.toCommand(request)` → `useCase.execute(command)` → return response.
+    Read-only queries (`findById`, `findBySubdomain`) with a single primitive parameter are exempt.
+7. **Authorization via JWT cookie + @PreAuthorize.** Authentication is handled by `JwtAuthenticationFilter`
+   (registered inline in `SecurityConfig`, NOT as a `@Component` or `@Bean` — avoids MockMvc filter init issues
+   with CGLIB proxies). The filter extracts the JWT from the `access_token` cookie, validates the
+   HS256 signature, and populates `SecurityContext` with a `TenantAuthenticationToken` containing
+   `userId`, `role`, `tenantId`, and `organizationId`. The filter does NOT set `TenantContext` —
+   that remains the `TenantFilter`'s responsibility (from Host header).
+   
+   **Authorization rules** are applied via `@PreAuthorize` with the `@scope` bean (SpEL):
+   - `@scope.isOrganizationMember(#request.organizationId())` — SUPER_ADMIN always true,
+     MUNICIPALITY_ADM true only if their tenant matches the current TenantContext,
+     others must have the exact organizationId.
+   - `@scope.isSameTenant(#tenantId)` — SUPER_ADMIN always true, others must match JWT tenantId.
+   - Combine with `hasRole()` / `hasAnyRole()` for role checks.
+   
+   **Public endpoints** (`/api/auth/**`, actuator, swagger) are whitelisted in `SecurityConfig`.
+   Everything else requires authentication. `@EnableMethodSecurity` is required for `@PreAuthorize`.
+   
+   **403 Forbidden** and **401 Unauthorized** are handled by `GlobalExceptionHandler` returning
+   consistent `ErrorResponse` JSON.
 
 ## Naming conventions
 
@@ -63,6 +98,22 @@ The platform has three components in this monorepo, but this file governs only t
   │   └── out/persistence/
   └── package-info.java
   ```
+
+## Mapping rules (MapStruct)
+
+- **MapStruct is used for all structural object-to-object mapping**: `Entity <-> Domain model`,
+  `Request DTO -> Command/Input`, `Domain model/View -> Response DTO`. Every adapter or
+  controller that needs this kind of translation must define a MapStruct `@Mapper` interface
+  for it — never write `toEntity`/`toDomain`/`toCommand` methods by hand inside an adapter,
+  controller, or service class.
+- **MapStruct mappers contain ZERO business logic.** They only translate structurally similar
+  objects. The moment a mapping requires a decision (e.g. "if status is X, compute Y", any
+  conditional, any validation, any side effect), that logic does NOT belong in a `default`
+  method inside the mapper — it belongs in the domain model or the use case. The mapper only
+  translates the already-decided result.
+- Configure mappers with `unmappedTargetPolicy = ReportingPolicy.ERROR` (or the project's agreed
+  equivalent) so that a new field added to either side of a mapping causes a compile-time
+  failure instead of a silently dropped field at runtime.
 
 ## Tech stack — use these, don't substitute without asking
 
@@ -134,4 +185,7 @@ If a decision isn't covered by this file (e.g. a new module's internal structure
 dependency choice), default to the architectural principles above (hexagonal layering, thin
 modules, no framework leakage into domain code) and flag the assumption explicitly in your
 response rather than silently picking an approach that contradicts the existing codebase
-patterns.
+patterns.  
+
+## Observational notes
+Always consult the documentation on the web to validate new features, and check whether the implementation is in accordance with the technologies used.

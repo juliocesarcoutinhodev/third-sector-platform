@@ -54,6 +54,7 @@ class MunicipalityPersistenceAdapter implements MunicipalityRepository {
                 domain.getCnpj(),
                 domain.getSubdomain(),
                 domain.getPlan(),
+                domain.getLogo(),
                 domain.isActive(),
                 domain.getCreatedAt(),
                 domain.getUpdatedAt()
@@ -67,6 +68,7 @@ class MunicipalityPersistenceAdapter implements MunicipalityRepository {
                 entity.getCnpj(),
                 entity.getSubdomain(),
                 entity.getPlan(),
+                entity.getLogo(),
                 entity.isActive(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()

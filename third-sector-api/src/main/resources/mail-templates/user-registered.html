@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="content">
+    <h1 style="color: #1a1a2e; font-size: 24px; margin-bottom: 24px;">
+        Bem-vindo(a), <span th:text="${userName}">Nome</span>!
+    </h1>
+
+    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+        Sua conta foi criada com sucesso na <strong>Plataforma do Terceiro Setor</strong>.
+    </p>
+
+    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+        A partir de agora, você pode acessar o sistema com seu e-mail e a senha cadastrada.
+    </p>
+
+    <div style="background-color: #f0f8ff; border-left: 4px solid #1a1a2e; padding: 16px; margin: 24px 0;">
+        <p style="margin: 0; font-size: 14px; color: #555;">
+            <strong>Importante:</strong> mantenha sua senha em segurança e não a compartilhe com ninguém.
+            Em caso de dúvidas, entre em contato com o administrador da sua prefeitura.
+        </p>
+    </div>
+
+    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+        Acesse o sistema através do link enviado pelo administrador responsável.
+    </p>
+</th:block>
+</html>

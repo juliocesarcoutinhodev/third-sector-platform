@@ -10,7 +10,7 @@
     </parent>
     <groupId>br.com.toponesystem</groupId>
     <artifactId>third-sector-api</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
     <name>third-sector-api</name>
     <description>third-sector-api</description>
     <properties>
@@ -19,6 +19,7 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <minio.version>9.0.3</minio.version>
         <springdoc.version>3.0.3</springdoc.version>
+        <jjwt.version>0.12.6</jjwt.version>
     </properties>
     <dependencies>
         <dependency>
@@ -114,6 +115,23 @@
             <version>${mapstruct.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>io.minio</groupId>
             <artifactId>minio</artifactId>
             <version>${minio.version}</version>
@@ -181,6 +199,11 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers-postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-kafka</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -28,10 +28,11 @@ class MunicipalityController {
     private final FindMunicipalityBySubdomainUseCase findBySubdomainUseCase;
     private final FindMunicipalityByIdUseCase findByIdUseCase;
     private final ListActiveMunicipalitiesUseCase listActiveUseCase;
+    private final RegisterMunicipalityRequestMapper requestMapper;
 
     @PostMapping
     ResponseEntity<ApiResponse<MunicipalityView>> register(@Valid @RequestBody RegisterMunicipalityRequest request) {
-        var view = registerUseCase.execute(request.name(), request.cnpj(), request.subdomain(), request.plan());
+        var view = registerUseCase.execute(requestMapper.toCommand(request));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Município cadastrado com sucesso.", view));
     }
