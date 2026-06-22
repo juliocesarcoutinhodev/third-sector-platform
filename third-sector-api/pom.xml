@@ -10,7 +10,7 @@
     </parent>
     <groupId>br.com.toponesystem</groupId>
     <artifactId>third-sector-api</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
     <name>third-sector-api</name>
     <description>third-sector-api</description>
     <properties>
