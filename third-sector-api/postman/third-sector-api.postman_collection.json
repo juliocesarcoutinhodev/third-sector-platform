@@ -163,7 +163,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Status 204 No Content\", () => pm.response.to.have.status(204));",
                   "pm.test(\"Cookies limpos\", () => {",
                   "    const cookies = pm.response.headers.get(\"Set-Cookie\");",
                   "    pm.expect(cookies).to.include(\"Max-Age=0\");",
@@ -200,9 +200,95 @@
           "response": [
             {
               "name": "Success - 200 OK",
+              "status": "No Content",
+              "code": 204,
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "POST - Password Reset Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Host",
+                "value": "{{tenantSubdomain}}.thirdsector.com.br"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{testUserEmail}}\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/password-reset/request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "password-reset",
+                "request"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success - 200 (same for known/unknown email)",
               "status": "OK",
               "code": 200,
-              "body": "{\"message\": \"Logged out successfully\"}"
+              "body": "{\"success\": true, \"message\": \"Se o e-mail estiver cadastrado, um link de redefini\u00e7\u00e3o foi enviado.\"}"
+            }
+          ]
+        },
+        {
+          "name": "POST - Password Reset Confirm",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Host",
+                "value": "{{tenantSubdomain}}.thirdsector.com.br"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\": \"{{resetToken}}\", \"newPassword\": \"NovaSenha1\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/password-reset/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "password-reset",
+                "confirm"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\"success\": true, \"message\": \"Senha redefinida com sucesso.\"}"
+            },
+            {
+              "name": "Error - 422 Invalid token",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "body": "{\"success\": false, \"status\": 422, \"error\": \"Unprocessable Entity\", \"message\": \"Token de redefini\u00e7\u00e3o inv\u00e1lido ou expirado.\"}"
             }
           ]
         }

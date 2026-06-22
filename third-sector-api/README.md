@@ -203,9 +203,11 @@ reconstruir qualquer estado vindo da persistência.
 | Método | Path | Descrição |
 |---|---|---|
 | `POST` | `/api/users` | Cadastro de usuário (BCrypt, evento `UserRegisteredEvent`) |
-| `POST` | `/api/auth/login` | Login com email/senha, retorna JWT em cookie HttpOnly |
-| `POST` | `/api/auth/refresh` | Rotation de refresh token (gera novo par, invalida anterior) |
-| `POST` | `/api/auth/logout` | Revoga família do refresh token, limpa cookies (idempotente) |
+| `POST` | `/api/auth/login` | Login (200 + `ApiResponse<LoginResponse>` + cookies) |
+| `POST` | `/api/auth/refresh` | Rotation (200 + `ApiResponse<LoginResponse>` + cookies) |
+| `POST` | `/api/auth/logout` | Logout (204 No Content, limpa cookies, idempotente) |
+| `POST` | `/api/auth/password-reset/request` | Solicita redefinição (200, resposta idêntica exista ou não) |
+| `POST` | `/api/auth/password-reset/confirm` | Confirma com token + nova senha (200) |
 
 **Login:**
 - `LoginUseCase` valida credenciais + usuário ativo, retorna erro genérico
@@ -239,6 +241,22 @@ reconstruir qualquer estado vindo da persistência.
   ORGANIZATION_MANAGER/OPERATOR restritos ao próprio organizationId
 - Erros: 401 Unauthorized (sem token), 403 Forbidden (sem permissão) — via `GlobalExceptionHandler`
 - Endpoints públicos: `/api/auth/**`, actuator, swagger — whitelistados no `SecurityConfig`
+
+**Password Reset:**
+- `POST /api/auth/password-reset/request`: resposta idêntica para email existente ou não (evita enumeração)
+- Token de uso único, SHA-256 hash no banco, 30min TTL (configurável)
+- Nova solicitação invalida tokens anteriores do mesmo usuário (`invalidateByUserId`)
+- `POST /api/auth/password-reset/confirm`: valida token + nova senha (mesmas regras da story 2.4)
+- Ao confirmar: `revokeByUserId` — todas as famílias de refresh token do usuário são revogadas
+- Evento `PasswordResetRequestedEvent` → listener envia email com token (template `password-reset.html`)
+- Tabela `password_reset_token` (tenant schema, migration V7)
+- Configuração: `security.password-reset.expiration` (default 1800000ms = 30min)
+
+**Padrão REST:**
+- Respostas de sucesso usam envelope `ApiResponse<T>` (`{"success":true,"message":"...","data":{...}}`)
+- Login/refresh: `ApiResponse<LoginResponse>` com dados do usuário em `data`
+- Logout: `204 No Content` (sem corpo, apenas cookies com `Max-Age=0`)
+- Mensagens de erro e sucesso em português (exceções, 401, 403)
 
 **Pendente:** `UserDetailsService`, CSRF protection.
 
@@ -361,6 +379,7 @@ O schema do banco é versionado pelo Flyway. As migrations são separadas por es
 | V4 | Tabela `organizations` (name, cnpj, status, timestamps) — UNIQUE em cnpj |
 | V5 | Tabela `event_publication` — registro de eventos do Spring Modulith |
 | V6 | Tabela `refresh_token` — tokenHash SHA-256, revoked, familyId, índice em token_hash |
+| V7 | Tabela `password_reset_token` — tokenHash SHA-256, usado, userId, índice em token_hash |
 
 No startup, o `TenantMigrationStartupRunner` aplica as migrations do master e depois
 itera sobre todos os municípios ativos aplicando as migrations nos schemas tenant.
