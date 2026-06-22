@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS organizations (
-    id              BIGSERIAL       PRIMARY KEY,
+    id              UUID            PRIMARY KEY DEFAULT uuidv7(),
     name            VARCHAR(255)    NOT NULL,
     cnpj            VARCHAR(14)     NOT NULL UNIQUE,
     status          VARCHAR(20)     NOT NULL DEFAULT 'PENDING',

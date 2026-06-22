@@ -5,12 +5,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
+import java.util.UUID;
 
-interface SpringDataPasswordResetTokenRepository extends JpaRepository<PasswordResetTokenEntity, Long> {
+interface SpringDataPasswordResetTokenRepository extends JpaRepository<PasswordResetTokenEntity, UUID> {
 
     Optional<PasswordResetTokenEntity> findByTokenHash(String tokenHash);
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("UPDATE PasswordResetTokenEntity t SET t.used = true WHERE t.userId = :userId AND t.used = false")
-    void invalidateByUserId(Long userId);
+    void invalidateByUserId(UUID userId);
 }

@@ -4,9 +4,10 @@ import br.com.toponesystem.thirdsector.municipality.domain.model.Municipality;
 import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record MunicipalityView(
-        Long id,
+        UUID id,
         String name,
         String cnpj,
         String subdomain,

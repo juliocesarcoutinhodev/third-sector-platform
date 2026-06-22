@@ -27,6 +27,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -38,6 +39,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PasswordResetIntegrationTest extends AbstractIntegrationTest {
 
     private static final String TENANT = "pwdreset";
+    private static final UUID TEST_ORG_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
+    private UUID testUserId;
 
     @DynamicPropertySource
     static void registerTenant(DynamicPropertyRegistry registry) {
@@ -75,9 +79,10 @@ class PasswordResetIntegrationTest extends AbstractIntegrationTest {
         migrationService.migrate(TENANT);
         TenantContext.setCurrentTenant(TENANT);
         createOrganization.execute(new CreateOrganizationCommand("PwdReset ONG", "12345678000195"));
-        createUserUseCase.execute(new CreateUserCommand(
+        var userView = createUserUseCase.execute(new CreateUserCommand(
                 "Eduardo Reis", "edu@example.com", "Senha123",
-                Role.ORGANIZATION_MANAGER, 1L));
+                Role.ORGANIZATION_MANAGER, TEST_ORG_ID));
+        testUserId = userView.id();
         TenantContext.clear();
     }
 
@@ -176,7 +181,7 @@ class PasswordResetIntegrationTest extends AbstractIntegrationTest {
         TenantContext.setCurrentTenant(TENANT);
         try {
             var token = new PasswordResetToken(
-                    1L,
+                    testUserId,
                     tokenHasher.hash(rawToken),
                     Instant.now().plusSeconds(1800));
             tokenRepository.save(token);

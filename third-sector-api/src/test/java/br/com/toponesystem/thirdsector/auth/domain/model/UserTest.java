@@ -3,6 +3,8 @@ package br.com.toponesystem.thirdsector.auth.domain.model;
 import br.com.toponesystem.thirdsector.auth.domain.exception.InvalidUserRoleAssignmentException;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,24 +31,24 @@ class UserTest {
 
     @Test
     void createsOrganizationManagerWithOrganization() {
-        var user = User.create("Org Mgr", "orgmgr@example.com", "hash", Role.ORGANIZATION_MANAGER, 10L);
+        var user = User.create("Org Mgr", "orgmgr@example.com", "hash", Role.ORGANIZATION_MANAGER, UUID.fromString("00000000-0000-0000-0000-00000000000a"));
 
         assertThat(user.getRole()).isEqualTo(Role.ORGANIZATION_MANAGER);
-        assertThat(user.getOrganizationId()).isEqualTo(10L);
+        assertThat(user.getOrganizationId()).isEqualTo(UUID.fromString("00000000-0000-0000-0000-00000000000a"));
     }
 
     @Test
     void createsOperatorWithOrganization() {
-        var user = User.create("Operator", "op@example.com", "hash", Role.OPERATOR, 20L);
+        var user = User.create("Operator", "op@example.com", "hash", Role.OPERATOR, UUID.fromString("00000000-0000-0000-0000-000000000014"));
 
         assertThat(user.getRole()).isEqualTo(Role.OPERATOR);
-        assertThat(user.getOrganizationId()).isEqualTo(20L);
+        assertThat(user.getOrganizationId()).isEqualTo(UUID.fromString("00000000-0000-0000-0000-000000000014"));
     }
 
     @Test
     void rejectsSuperAdminWithOrganization() {
         assertThatThrownBy(() ->
-                User.create("Admin", "admin@example.com", "hash", Role.SUPER_ADMIN, 5L)
+                User.create("Admin", "admin@example.com", "hash", Role.SUPER_ADMIN, UUID.fromString("00000000-0000-0000-0000-000000000005"))
         ).isInstanceOf(InvalidUserRoleAssignmentException.class)
                 .hasMessageContaining("SUPER_ADMIN")
                 .hasMessageContaining("não permite vínculo com organização.");
@@ -55,7 +57,7 @@ class UserTest {
     @Test
     void rejectsMunicipalityAdmWithOrganization() {
         assertThatThrownBy(() ->
-                User.create("Mun Adm", "munadm@example.com", "hash", Role.MUNICIPALITY_ADM, 5L)
+                User.create("Mun Adm", "munadm@example.com", "hash", Role.MUNICIPALITY_ADM, UUID.fromString("00000000-0000-0000-0000-000000000005"))
         ).isInstanceOf(InvalidUserRoleAssignmentException.class)
                 .hasMessageContaining("MUNICIPALITY_ADM")
                 .hasMessageContaining("não permite vínculo com organização.");
@@ -81,10 +83,10 @@ class UserTest {
 
     @Test
     void hydrationConstructorRebuildsFromPersistence() {
-        var hydrated = new User(1L, "Name", "email@example.com", "hash", Role.MUNICIPALITY_ADM,
+        var hydrated = new User(UUID.fromString("00000000-0000-0000-0000-000000000001"), "Name", "email@example.com", "hash", Role.MUNICIPALITY_ADM,
                 null, true, java.time.Instant.EPOCH, java.time.Instant.EPOCH);
 
-        assertThat(hydrated.getId()).isEqualTo(1L);
+        assertThat(hydrated.getId()).isEqualTo(UUID.fromString("00000000-0000-0000-0000-000000000001"));
         assertThat(hydrated.getEmail()).isEqualTo("email@example.com");
         assertThat(hydrated.getRole()).isEqualTo(Role.MUNICIPALITY_ADM);
         assertThat(hydrated.getOrganizationId()).isNull();
@@ -93,8 +95,8 @@ class UserTest {
     @Test
     void factoryMethodDoesNotValidateOnHydrationConstructor() {
         assertThatCode(() ->
-                new User(1L, "Name", "email@example.com", "hash", Role.SUPER_ADMIN,
-                        5L, true, java.time.Instant.EPOCH, java.time.Instant.EPOCH)
+                new User(UUID.fromString("00000000-0000-0000-0000-000000000001"), "Name", "email@example.com", "hash", Role.SUPER_ADMIN,
+                        UUID.fromString("00000000-0000-0000-0000-000000000005"), true, java.time.Instant.EPOCH, java.time.Instant.EPOCH)
         ).doesNotThrowAnyException();
     }
 }

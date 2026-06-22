@@ -3,6 +3,7 @@ package br.com.toponesystem.thirdsector.auth.domain.port.out;
 import br.com.toponesystem.thirdsector.auth.domain.model.PasswordResetToken;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public interface PasswordResetTokenRepository {
 
@@ -10,5 +11,5 @@ public interface PasswordResetTokenRepository {
 
     Optional<PasswordResetToken> findByTokenHash(String tokenHash);
 
-    void invalidateByUserId(Long userId);
+    void invalidateByUserId(UUID userId);
 }

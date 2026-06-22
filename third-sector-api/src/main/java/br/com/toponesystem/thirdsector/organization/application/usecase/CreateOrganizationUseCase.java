@@ -1,6 +1,7 @@
 package br.com.toponesystem.thirdsector.organization.application.usecase;
 
 import br.com.toponesystem.thirdsector.organization.application.dto.OrganizationView;
+import br.com.toponesystem.thirdsector.organization.domain.exception.DuplicateCnpjException;
 import br.com.toponesystem.thirdsector.organization.domain.model.Organization;
 import br.com.toponesystem.thirdsector.organization.domain.port.out.OrganizationRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,11 @@ public class CreateOrganizationUseCase {
 
     @Transactional
     public OrganizationView execute(CreateOrganizationCommand command) {
-        var organization = Organization.create(command.name(), stripCnpjMask(command.cnpj()));
+        var cnpj = stripCnpjMask(command.cnpj());
+        if (repository.existsByCnpj(cnpj)) {
+            throw new DuplicateCnpjException(cnpj);
+        }
+        var organization = Organization.create(command.name(), cnpj);
         var saved = repository.save(organization);
         return OrganizationView.from(saved);
     }

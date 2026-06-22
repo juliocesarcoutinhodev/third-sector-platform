@@ -19,6 +19,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Slf4j
 @Component
 @Profile("dev")
@@ -34,6 +36,8 @@ class DevDataSeeder implements CommandLineRunner {
     private static final String DEV_ORG_CNPJ = "12345678000195";
     private static final String DEV_MGR_EMAIL = "manager@dev.local";
     private static final String DEV_MGR_PASSWORD = "ManagerDev1";
+
+    private UUID devOrganizationId;
 
     private final RegisterMunicipalityUseCase registerMunicipalityUseCase;
     private final TenantMigrationService tenantMigrationService;
@@ -81,8 +85,10 @@ class DevDataSeeder implements CommandLineRunner {
         try {
             var org = createOrganizationUseCase.execute(new CreateOrganizationCommand(
                     DEV_ORG_NAME, DEV_ORG_CNPJ));
-            log.info("Test organization '{}' created (id={})", DEV_ORG_NAME, org.id());
+            devOrganizationId = org.id();
+            log.info("Test organization '{}' created (id={})", DEV_ORG_NAME, devOrganizationId);
         } catch (DuplicateCnpjException e) {
+            devOrganizationId = UUID.randomUUID();
             log.info("Test organization '{}' already exists", DEV_ORG_NAME);
         }
     }
@@ -93,7 +99,7 @@ class DevDataSeeder implements CommandLineRunner {
         try {
             createUserUseCase.execute(new CreateUserCommand(
                     "Gestor de Teste", DEV_MGR_EMAIL, DEV_MGR_PASSWORD,
-                    Role.ORGANIZATION_MANAGER, 1L));
+                    Role.ORGANIZATION_MANAGER, devOrganizationId));
             log.info("ORGANIZATION_MANAGER '{}' created", DEV_MGR_EMAIL);
         } catch (DuplicateEmailException e) {
             log.info("ORGANIZATION_MANAGER '{}' already exists", DEV_MGR_EMAIL);

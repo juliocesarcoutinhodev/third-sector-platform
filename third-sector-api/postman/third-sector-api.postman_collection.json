@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "ts-api-v1",
     "name": "Third Sector API",
-    "description": "# Third Sector API\n\nAPI REST da plataforma SaaS para o terceiro setor brasileiro \u2014 gest\u00e3o de transpar\u00eancia financeira e presta\u00e7\u00e3o de contas p\u00fablicas para organiza\u00e7\u00f5es que recebem transfer\u00eancias de prefeituras.\n\nModelo de neg\u00f3cio B2G: prefeituras licenciam a plataforma para gerenciar organiza\u00e7\u00f5es (ONGs, associa\u00e7\u00f5es) que recebem recursos p\u00fablicos. Aplica\u00e7\u00e3o **multi-tenant** por munic\u00edpio (schema-per-tenant no PostgreSQL).\n\n## Autentica\u00e7\u00e3o\n\nEsta API utiliza **JWT em cookie HttpOnly** \u2014 n\u00e3o h\u00e1 header `Authorization`.\n\n**Fluxo:**\n1. `POST /api/auth/login` \u2192 cookies `access_token` (15 min) e `refresh_token` (7 dias) setados automaticamente\n2. Requests subsequentes s\u00e3o autenticados automaticamente pelo cookie `access_token` enviado pelo Postman\n3. Quando o access token expirar \u2192 `POST /api/auth/refresh` gera novo par de tokens\n\nO Postman gerencia cookies entre requests do mesmo dom\u00ednio automaticamente. **N\u00e3o \u00e9 necess\u00e1rio configurar token manualmente.**\n\n## Multi-tenancy\n\nCada munic\u00edpio \u00e9 um tenant isolado. Em **produ\u00e7\u00e3o**, o tenant \u00e9 resolvido pelo subdom\u00ednio (ex: `maringa.thirdsector.com.br`). Em **desenvolvimento local**, o header `Host` com subdom\u00ednio completo OU o header `X-Tenant-ID` s\u00e3o usados (fallback habilitado no profile `dev`).\n\nEsta collection usa o header `Host: {{tenantSubdomain}}.thirdsector.com.br` em todos os requests.\n\nOs tenants de desenvolvimento conhecidos s\u00e3o: `maringa`, `londrina`, `curitiba`.\n\n## Vari\u00e1veis da collection\n\n| Vari\u00e1vel | Descri\u00e7\u00e3o | Preenchimento |\n|---|---|---|\n| `baseUrl` | URL base da API | Manual (default: `http://localhost:8080`) |\n| `tenantSubdomain` | Subdom\u00ednio do munic\u00edpio/tenant | Manual (default: `maringa`) |\n| `testUserName` | Nome do usu\u00e1rio de teste | Manual |\n| `testUserEmail` | Email do usu\u00e1rio de teste | Manual |\n| `testUserPassword` | Senha do usu\u00e1rio de teste (m\u00edn. 8 chars, 1 letra + 1 n\u00famero) | Manual |\n| `testUserRole` | Role do usu\u00e1rio (SUPER_ADMIN, MUNICIPALITY_ADM, ORGANIZATION_MANAGER, OPERATOR) | Manual |\n| `testMunicipalityCnpj` | CNPJ v\u00e1lido para teste de munic\u00edpio | Manual |\n| `testMunicipalityPlan` | Plano (BASIC, STANDARD, PREMIUM) | Manual |\n| `organizationId` | ID da organiza\u00e7\u00e3o criada | Autom\u00e1tico (POST Organization) |\n| `municipalityId` | ID do munic\u00edpio criado | Autom\u00e1tico (POST Municipality) |\n\n## Conven\u00e7\u00e3o de erros\n\nToda resposta de erro segue o formato `ErrorResponse`:\n\n```json\n{\n  \"success\": false,\n  \"status\": 422,\n  \"error\": \"Unprocessable Entity\",\n  \"message\": \"Invalid email or password\",\n  \"timestamp\": \"2026-06-21T20:00:00Z\"\n}\n```\n\nErros de valida\u00e7\u00e3o (400) incluem array `errors` com `field` e `message` por campo.\n\nRespostas de sucesso seguem o envelope `ApiResponse<T>` com `success: true`, `message` e `data`.\n\n## Como navegar\n\nOs requests est\u00e3o organizados em pastas por m\u00f3dulo, na ordem l\u00f3gica de uso dentro de cada pasta.\n\n## Ambiente de desenvolvimento\n\nAo subir com o profile `dev`, o `DevDataSeeder` cria automaticamente:\n\n| Entidade | Identificador | Credenciais |\n|---|---|---|\n| ADM da Prefeitura | `admin@dev.local` | `AdminDev1` |\n| Gestor da Organiza\u00e7\u00e3o | `manager@dev.local` | `ManagerDev1` |\n| Organiza\u00e7\u00e3o | id `1` | CNPJ `12345678000195` |\n\nAs vari\u00e1veis `adminEmail`, `adminPassword`, `managerEmail`, `managerPassword` j\u00e1 est\u00e3o preenchidas no environment.\n\nAo subir com o profile , um munic\u00edpio de teste \u00e9 criado automaticamente pelo :\n\n| Par\u00e2metro | Valor |\n|---|---|\n| Nome | Munic\u00edpio de Teste (Dev) |\n| Subdom\u00ednio |  |\n| CNPJ |  |\n| Plano | BASIC |\n\nO schema do tenant \u00e9 migrado automaticamente. O subdom\u00ednio  \u00e9 o valor padr\u00e3o da vari\u00e1vel .\nPara usar em outro tenant de desenvolvimento, utilize  ou  (cadastrados manualmente).\n",
+    "description": "# Third Sector API\n\nAPI REST da plataforma SaaS para o terceiro setor brasileiro \u2014 gest\u00e3o de transpar\u00eancia financeira e presta\u00e7\u00e3o de contas p\u00fablicas para organiza\u00e7\u00f5es que recebem transfer\u00eancias de prefeituras.\n\nModelo de neg\u00f3cio B2G: prefeituras licenciam a plataforma para gerenciar organiza\u00e7\u00f5es (ONGs, associa\u00e7\u00f5es) que recebem recursos p\u00fablicos. Aplica\u00e7\u00e3o **multi-tenant** por munic\u00edpio (schema-per-tenant no PostgreSQL).\n\n## Autentica\u00e7\u00e3o\n\nEsta API utiliza **JWT em cookie HttpOnly** \u2014 n\u00e3o h\u00e1 header `Authorization`.\n\n**Fluxo:**\n1. `POST /api/auth/login` \u2192 cookies `access_token` (15 min) e `refresh_token` (7 dias) setados automaticamente\n2. Requests subsequentes s\u00e3o autenticados automaticamente pelo cookie `access_token` enviado pelo Postman\n3. Quando o access token expirar \u2192 `POST /api/auth/refresh` gera novo par de tokens\n\nO Postman gerencia cookies entre requests do mesmo dom\u00ednio automaticamente. **N\u00e3o \u00e9 necess\u00e1rio configurar token manualmente.**\n\n## Multi-tenancy\n\nCada munic\u00edpio \u00e9 um tenant isolado. Em **produ\u00e7\u00e3o**, o tenant \u00e9 resolvido pelo subdom\u00ednio (ex: `maringa.thirdsector.com.br`). Em **desenvolvimento local**, o header `Host` com subdom\u00ednio completo OU o header `X-Tenant-ID` s\u00e3o usados (fallback habilitado no profile `dev`).\n\nEsta collection usa o header `Host: {{tenantSubdomain}}.thirdsector.com.br` em todos os requests.\n\nOs tenants de desenvolvimento conhecidos s\u00e3o: `maringa`, `londrina`, `curitiba`.\n\n## Formato de IDs\n\nTodos os identificadores (id, userId, organizationId, municipalityId) s\u00e3o UUIDs no formato string (ex: \"00000000-0000-0000-0000-000000000001\"). N\u00e3o s\u00e3o n\u00fameros inteiros.\n\n## Vari\u00e1veis da collection\n\n| Vari\u00e1vel | Descri\u00e7\u00e3o | Preenchimento |\n|---|---|---|\n| `baseUrl` | URL base da API | Manual (default: `http://localhost:8080`) |\n| `tenantSubdomain` | Subdom\u00ednio do munic\u00edpio/tenant | Manual (default: `maringa`) |\n| `testUserName` | Nome do usu\u00e1rio de teste | Manual |\n| `testUserEmail` | Email do usu\u00e1rio de teste | Manual |\n| `testUserPassword` | Senha do usu\u00e1rio de teste (m\u00edn. 8 chars, 1 letra + 1 n\u00famero) | Manual |\n| `testUserRole` | Role do usu\u00e1rio (SUPER_ADMIN, MUNICIPALITY_ADM, ORGANIZATION_MANAGER, OPERATOR) | Manual |\n| `testMunicipalityCnpj` | CNPJ v\u00e1lido para teste de munic\u00edpio | Manual |\n| `testMunicipalityPlan` | Plano (BASIC, STANDARD, PREMIUM) | Manual |\n| `organizationId` | ID da organiza\u00e7\u00e3o criada | Autom\u00e1tico (POST Organization) |\n| `municipalityId` | ID do munic\u00edpio criado | Autom\u00e1tico (POST Municipality) |\n\n## Conven\u00e7\u00e3o de erros\n\nToda resposta de erro segue o formato `ErrorResponse`:\n\n```json\n{\n  \"success\": false,\n  \"status\": 422,\n  \"error\": \"Unprocessable Entity\",\n  \"message\": \"Invalid email or password\",\n  \"timestamp\": \"2026-06-21T20:00:00Z\"\n}\n```\n\nErros de valida\u00e7\u00e3o (400) incluem array `errors` com `field` e `message` por campo.\n\nRespostas de sucesso seguem o envelope `ApiResponse<T>` com `success: true`, `message` e `data`.\n\n## Como navegar\n\nOs requests est\u00e3o organizados em pastas por m\u00f3dulo, na ordem l\u00f3gica de uso dentro de cada pasta.\n\n## Ambiente de desenvolvimento\n\nAo subir com o profile `dev`, o `DevDataSeeder` cria automaticamente:\n\n| Entidade | Identificador | Credenciais |\n|---|---|---|\n| ADM da Prefeitura | `admin@dev.local` | `AdminDev1` |\n| Gestor da Organiza\u00e7\u00e3o | `manager@dev.local` | `ManagerDev1` |\n| Organiza\u00e7\u00e3o | id `1` | CNPJ `12345678000195` |\n\nAs vari\u00e1veis `adminEmail`, `adminPassword`, `managerEmail`, `managerPassword` j\u00e1 est\u00e3o preenchidas no environment.\n\nAo subir com o profile , um munic\u00edpio de teste \u00e9 criado automaticamente pelo :\n\n| Par\u00e2metro | Valor |\n|---|---|\n| Nome | Munic\u00edpio de Teste (Dev) |\n| Subdom\u00ednio |  |\n| CNPJ |  |\n| Plano | BASIC |\n\nO schema do tenant \u00e9 migrado automaticamente. O subdom\u00ednio  \u00e9 o valor padr\u00e3o da vari\u00e1vel .\nPara usar em outro tenant de desenvolvimento, utilize  ou  (cadastrados manualmente).\n",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -79,7 +79,7 @@
                   "value": "refresh_token=abc123...; HttpOnly; Secure; SameSite=Lax; Path=/api/auth/refresh; Max-Age=604800"
                 }
               ],
-              "body": "{\n  \"userId\": 1,\n  \"name\": \"Jo\u00e3o Silva\",\n  \"email\": \"joao@example.com\",\n  \"role\": \"ORGANIZATION_MANAGER\",\n  \"organizationId\": 1\n}"
+              "body": "{\n  \"userId\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"Jo\u00e3o Silva\",\n  \"email\": \"joao@example.com\",\n  \"role\": \"ORGANIZATION_MANAGER\",\n  \"organizationId\": \"00000000-0000-0000-0000-000000000002\"\n}"
             },
             {
               "name": "Error - 422 Invalid credentials",
@@ -309,7 +309,7 @@
                   "pm.test(\"User criado com sucesso\", () => {",
                   "    const body = pm.response.json();",
                   "    pm.expect(body.success).to.be.true;",
-                  "    pm.expect(body.data.id).to.be.a(\"number\");",
+                  "    pm.expect(body.data.id).to.be.a(\"string\");",
                   "    pm.expect(body.data.active).to.be.true;",
                   "});"
                 ],
@@ -331,7 +331,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"{{testUserName}}\",\n  \"email\": \"{{testUserEmail}}\",\n  \"password\": \"{{testUserPassword}}\",\n  \"role\": \"{{testUserRole}}\",\n  \"organizationId\": {{organizationId}}\n}"
+              "raw": "{\n  \"name\": \"{{testUserName}}\",\n  \"email\": \"{{testUserEmail}}\",\n  \"password\": \"{{testUserPassword}}\",\n  \"role\": \"{{testUserRole}}\",\n  \"organizationId\": \"{{organizationId}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/users",
@@ -349,7 +349,7 @@
               "name": "Success - 201 Created",
               "status": "Created",
               "code": 201,
-              "body": "{\n  \"success\": true,\n  \"message\": \"Usu\u00e1rio cadastrado com sucesso.\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Jo\u00e3o Silva\",\n    \"email\": \"joao@example.com\",\n    \"role\": \"ORGANIZATION_MANAGER\",\n    \"organizationId\": 1,\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"Usu\u00e1rio cadastrado com sucesso.\",\n  \"data\": {\n    \"id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"Jo\u00e3o Silva\",\n    \"email\": \"joao@example.com\",\n    \"role\": \"ORGANIZATION_MANAGER\",\n    \"organizationId\": \"00000000-0000-0000-0000-000000000001\",\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
             },
             {
               "name": "Error - 409 Duplicate email",
@@ -388,7 +388,7 @@
                   "pm.test(\"Munic\u00edpio criado\", () => {",
                   "    const body = pm.response.json();",
                   "    pm.expect(body.success).to.be.true;",
-                  "    pm.expect(body.data.id).to.be.a(\"number\");",
+                  "    pm.expect(body.data.id).to.be.a(\"string\");",
                   "});",
                   "",
                   "const body = pm.response.json();",
@@ -428,7 +428,7 @@
               "name": "Success - 201 Created",
               "status": "Created",
               "code": 201,
-              "body": "{\n  \"success\": true,\n  \"message\": \"Munic\u00edpio cadastrado com sucesso.\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Maring\u00e1\",\n    \"cnpj\": \"11222333000181\",\n    \"subdomain\": \"maringa\",\n    \"plan\": \"BASIC\",\n    \"logo\": null,\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\",\n    \"updatedAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"Munic\u00edpio cadastrado com sucesso.\",\n  \"data\": {\n    \"id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"Maring\u00e1\",\n    \"cnpj\": \"11222333000181\",\n    \"subdomain\": \"maringa\",\n    \"plan\": \"BASIC\",\n    \"logo\": null,\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\",\n    \"updatedAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
             },
             {
               "name": "Error - 409 Duplicate subdomain",
@@ -465,7 +465,7 @@
               "name": "Success - 200 OK",
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"success\": true,\n  \"message\": \"Munic\u00edpios ativos listados com sucesso.\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Maring\u00e1\",\n      \"cnpj\": \"11222333000181\",\n      \"subdomain\": \"maringa\",\n      \"plan\": \"BASIC\",\n      \"logo\": null,\n      \"active\": true,\n      \"createdAt\": \"2026-06-21T20:00:00Z\",\n      \"updatedAt\": \"2026-06-21T20:00:00Z\"\n    }\n  ]\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"Munic\u00edpios ativos listados com sucesso.\",\n  \"data\": [\n    {\n      \"id\": \"00000000-0000-0000-0000-000000000001\",\n      \"name\": \"Maring\u00e1\",\n      \"cnpj\": \"11222333000181\",\n      \"subdomain\": \"maringa\",\n      \"plan\": \"BASIC\",\n      \"logo\": null,\n      \"active\": true,\n      \"createdAt\": \"2026-06-21T20:00:00Z\",\n      \"updatedAt\": \"2026-06-21T20:00:00Z\"\n    }\n  ]\n}"
             }
           ]
         },
@@ -492,7 +492,7 @@
               "name": "Success - 200 OK",
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"success\": true,\n  \"message\": \"Munic\u00edpio encontrado.\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Maring\u00e1\",\n    \"cnpj\": \"11222333000181\",\n    \"subdomain\": \"maringa\",\n    \"plan\": \"BASIC\",\n    \"logo\": null,\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\",\n    \"updatedAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"Munic\u00edpio encontrado.\",\n  \"data\": {\n    \"id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"Maring\u00e1\",\n    \"cnpj\": \"11222333000181\",\n    \"subdomain\": \"maringa\",\n    \"plan\": \"BASIC\",\n    \"logo\": null,\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\",\n    \"updatedAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
             },
             {
               "name": "Error - 404 Not Found",
@@ -524,13 +524,13 @@
               "name": "Success - 200 OK",
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"success\": true,\n  \"message\": \"Munic\u00edpio encontrado.\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Maring\u00e1\",\n    \"cnpj\": \"11222333000181\",\n    \"subdomain\": \"maringa\",\n    \"plan\": \"BASIC\",\n    \"logo\": null,\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\",\n    \"updatedAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"Munic\u00edpio encontrado.\",\n  \"data\": {\n    \"id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"Maring\u00e1\",\n    \"cnpj\": \"11222333000181\",\n    \"subdomain\": \"maringa\",\n    \"plan\": \"BASIC\",\n    \"logo\": null,\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\",\n    \"updatedAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
             },
             {
               "name": "Error - 404 Not Found",
               "status": "Not Found",
               "code": 404,
-              "body": "{\n  \"success\": false,\n  \"status\": 404,\n  \"error\": \"Not Found\",\n  \"message\": \"Municipality with id 999 not found\",\n  \"timestamp\": \"2026-06-21T20:00:00Z\"\n}"
+              "body": "{\n  \"success\": false,\n  \"status\": 404,\n  \"error\": \"Not Found\",\n  \"message\": \"Municipality not found\",\n  \"timestamp\": \"2026-06-21T20:00:00Z\"\n}"
             }
           ]
         }

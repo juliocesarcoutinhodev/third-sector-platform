@@ -2,6 +2,8 @@ package br.com.toponesystem.thirdsector.organization.domain.model;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class OrganizationTest {
@@ -19,10 +21,10 @@ class OrganizationTest {
 
     @Test
     void hydrationConstructorRebuildsFromPersistence() {
-        var hydrated = new Organization(1L, "ACME ONG", "12345678000195",
+        var hydrated = new Organization(UUID.fromString("00000000-0000-0000-0000-000000000001"), "ACME ONG", "12345678000195",
                 OrganizationStatus.ACTIVE, java.time.Instant.EPOCH, java.time.Instant.EPOCH);
 
-        assertThat(hydrated.getId()).isEqualTo(1L);
+        assertThat(hydrated.getId()).isEqualTo(UUID.fromString("00000000-0000-0000-0000-000000000001"));
         assertThat(hydrated.getName()).isEqualTo("ACME ONG");
         assertThat(hydrated.getCnpj()).isEqualTo("12345678000195");
         assertThat(hydrated.getStatus()).isEqualTo(OrganizationStatus.ACTIVE);

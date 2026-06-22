@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+import java.util.UUID;
+
 record CreateUserRequest(
         @NotBlank @Size(max = 255) String name,
         @Email @NotBlank @Size(max = 255) String email,
@@ -15,5 +17,5 @@ record CreateUserRequest(
                 message = "must contain at least one letter and one number")
         String password,
         @NotNull Role role,
-        Long organizationId
+        UUID organizationId
 ) {}

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -28,7 +29,7 @@ class RefreshTokenPersistenceAdapter implements RefreshTokenRepository {
 
     @Override
     @Transactional
-    public void revokeById(Long id) {
+    public void revokeById(UUID id) {
         jpaRepo.revokeById(id);
     }
 
@@ -40,7 +41,7 @@ class RefreshTokenPersistenceAdapter implements RefreshTokenRepository {
 
     @Override
     @Transactional
-    public void revokeByUserId(Long userId) {
+    public void revokeByUserId(UUID userId) {
         jpaRepo.revokeByUserId(userId);
     }
 

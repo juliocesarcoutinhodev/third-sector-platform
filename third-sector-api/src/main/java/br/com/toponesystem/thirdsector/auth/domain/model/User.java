@@ -4,28 +4,29 @@ import br.com.toponesystem.thirdsector.auth.domain.exception.InvalidUserRoleAssi
 import lombok.Getter;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 public class User {
 
-    private Long id;
+    private UUID id;
     private String name;
     private String email;
     private String passwordHash;
     private Role role;
-    private Long organizationId;
+    private UUID organizationId;
     private boolean active;
     private Instant createdAt;
     private Instant updatedAt;
 
     public static User create(String name, String email, String passwordHash,
-                               Role role, Long organizationId) {
+                               Role role, UUID organizationId) {
         validateRoleOrganizationBinding(role, organizationId);
         return new User(name, email, passwordHash, role, organizationId);
     }
 
-    public User(Long id, String name, String email, String passwordHash, Role role,
-                Long organizationId, boolean active, Instant createdAt, Instant updatedAt) {
+    public User(UUID id, String name, String email, String passwordHash, Role role,
+                UUID organizationId, boolean active, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -37,7 +38,7 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
-    private User(String name, String email, String passwordHash, Role role, Long organizationId) {
+    private User(String name, String email, String passwordHash, Role role, UUID organizationId) {
         this.name = name;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -48,7 +49,7 @@ public class User {
         this.updatedAt = Instant.now();
     }
 
-    private static void validateRoleOrganizationBinding(Role role, Long organizationId) {
+    private static void validateRoleOrganizationBinding(Role role, UUID organizationId) {
         switch (role) {
             case SUPER_ADMIN, MUNICIPALITY_ADM -> {
                 if (organizationId != null) {

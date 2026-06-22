@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -38,7 +39,7 @@ class MunicipalityPersistenceAdapter implements MunicipalityRepository {
     }
 
     @Override
-    public Optional<Municipality> findById(Long id) {
+    public Optional<Municipality> findById(UUID id) {
         return jpaRepo.findById(id).map(this::toDomain);
     }
 

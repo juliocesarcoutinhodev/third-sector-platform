@@ -3,11 +3,12 @@ package br.com.toponesystem.thirdsector.organization.domain.model;
 import lombok.Getter;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 public class Organization {
 
-    private Long id;
+    private UUID id;
     private String name;
     private String cnpj;
     private OrganizationStatus status;
@@ -26,7 +27,7 @@ public class Organization {
         this.updatedAt = Instant.now();
     }
 
-    public Organization(Long id, String name, String cnpj, OrganizationStatus status,
+    public Organization(UUID id, String name, String cnpj, OrganizationStatus status,
                         Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.name = name;

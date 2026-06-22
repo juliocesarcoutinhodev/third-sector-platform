@@ -21,6 +21,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -28,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class UserRegistrationIntegrationTest extends AbstractIntegrationTest {
 
     private static final String TENANT = "userreg-" + System.nanoTime();
+    private static final UUID TEST_ORG_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
     @Autowired
     private RegisterMunicipalityUseCase registerMunicipality;
@@ -68,7 +71,7 @@ class UserRegistrationIntegrationTest extends AbstractIntegrationTest {
         try {
             var view = createUserUseCase.execute(new CreateUserCommand(
                     "João Silva", "joao@example.com", "Senha123",
-                    Role.OPERATOR, 1L));
+                    Role.OPERATOR, TEST_ORG_ID));
 
             assertThat(view.id()).isNotNull();
             assertThat(view.name()).isEqualTo("João Silva");
@@ -90,12 +93,12 @@ class UserRegistrationIntegrationTest extends AbstractIntegrationTest {
         try {
             createUserUseCase.execute(new CreateUserCommand(
                     "Maria Souza", "maria@example.com", "Senha456",
-                    Role.ORGANIZATION_MANAGER, 1L));
+                    Role.ORGANIZATION_MANAGER, TEST_ORG_ID));
 
             assertThatThrownBy(() ->
                     createUserUseCase.execute(new CreateUserCommand(
                             "Maria Duplicate", "maria@example.com", "OutraSenha1",
-                            Role.OPERATOR, 1L))
+                            Role.OPERATOR, TEST_ORG_ID))
             ).isInstanceOf(DuplicateEmailException.class)
                     .hasMessageContaining("maria@example.com");
         } finally {
@@ -110,7 +113,7 @@ class UserRegistrationIntegrationTest extends AbstractIntegrationTest {
             assertThatThrownBy(() ->
                     createUserUseCase.execute(new CreateUserCommand(
                             "Admin Inválido", "admin-inv@example.com", "Senha789",
-                            Role.SUPER_ADMIN, 1L))
+                            Role.SUPER_ADMIN, TEST_ORG_ID))
             ).isInstanceOf(InvalidUserRoleAssignmentException.class)
                     .hasMessageContaining("SUPER_ADMIN")
                     .hasMessageContaining("não permite vínculo com organização.");
