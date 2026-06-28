@@ -1,6 +1,7 @@
 package br.com.toponesystem.thirdsector.municipality;
 
 import br.com.toponesystem.thirdsector.AbstractIntegrationTest;
+import br.com.toponesystem.thirdsector.PlanFixtures;
 import br.com.toponesystem.thirdsector.municipality.application.dto.MunicipalityView;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.FindMunicipalityBySubdomainUseCase;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.ListActiveMunicipalitiesUseCase;
@@ -8,7 +9,6 @@ import br.com.toponesystem.thirdsector.municipality.application.usecase.Register
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityUseCase;
 import br.com.toponesystem.thirdsector.municipality.domain.exception.DuplicateSubdomainException;
 import br.com.toponesystem.thirdsector.municipality.domain.exception.MunicipalityNotFoundException;
-import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -32,10 +32,14 @@ class MunicipalityServiceTest extends AbstractIntegrationTest {
     @Autowired
     private ListActiveMunicipalitiesUseCase listActiveUseCase;
 
+    @Autowired
+    private PlanFixtures planFixtures;
+
     @Test
     void registersNewMunicipality() {
+        var planId = planFixtures.basicPlanId();
         var view = registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Maringá", CNPJ_MARINGA, "maringa-test", Plan.BASIC, null));
+                "Maringá", CNPJ_MARINGA, "maringa-test", planId, null));
 
         assertThat(view.id()).isNotNull();
         assertThat(view.subdomain()).isEqualTo("maringa-test");
@@ -45,28 +49,32 @@ class MunicipalityServiceTest extends AbstractIntegrationTest {
 
     @Test
     void stripsCnpjMaskOnRegister() {
+        var planId = planFixtures.enterprisePlanId();
         var view = registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Curitiba", "43.773.954/0001-40", "curitiba-test", Plan.PREMIUM, null));
+                "Curitiba", "43.773.954/0001-40", "curitiba-test", planId, null));
 
         assertThat(view.cnpj()).isEqualTo(CNPJ_CURITIBA);
     }
 
     @Test
     void rejectsDuplicateSubdomain() {
+        var intermediateId = planFixtures.intermediatePlanId();
+        var basicId = planFixtures.basicPlanId();
         registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Londrina", CNPJ_LONDRINA, "londrina-test", Plan.STANDARD, null));
+                "Londrina", CNPJ_LONDRINA, "londrina-test", intermediateId, null));
 
         assertThatThrownBy(() ->
                 registerUseCase.execute(new RegisterMunicipalityCommand(
-                        "Londrina 2", CNPJ_LONDRINA2, "londrina-test", Plan.BASIC, null))
+                        "Londrina 2", CNPJ_LONDRINA2, "londrina-test", basicId, null))
         ).isInstanceOf(DuplicateSubdomainException.class)
                 .hasMessageContaining("londrina-test");
     }
 
     @Test
     void findsBySubdomain() {
+        var planId = planFixtures.basicPlanId();
         registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Cascavel", CNPJ_CASCAVEL, "cascavel-test", Plan.BASIC, null));
+                "Cascavel", CNPJ_CASCAVEL, "cascavel-test", planId, null));
 
         MunicipalityView found = findBySubdomainUseCase.execute("cascavel-test");
 
@@ -83,8 +91,9 @@ class MunicipalityServiceTest extends AbstractIntegrationTest {
     @Test
     void listActiveReturnsOnlyActiveMunicipalities() {
         int before = listActiveUseCase.execute().size();
+        var planId = planFixtures.intermediatePlanId();
         registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Londrina Norte", CNPJ_LONDRINA2, "londrina-norte-test", Plan.STANDARD, null));
+                "Londrina Norte", CNPJ_LONDRINA2, "londrina-norte-test", planId, null));
 
         assertThat(listActiveUseCase.execute()).hasSizeGreaterThan(before);
     }

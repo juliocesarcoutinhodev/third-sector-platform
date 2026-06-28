@@ -1,9 +1,9 @@
 package br.com.toponesystem.thirdsector.organization;
 
+import br.com.toponesystem.thirdsector.PlanFixtures;
 import br.com.toponesystem.thirdsector.AbstractIntegrationTest;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityCommand;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityUseCase;
-import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationCommand;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationUseCase;
 import br.com.toponesystem.thirdsector.organization.domain.exception.DuplicateCnpjException;
@@ -35,12 +35,16 @@ class OrganizationIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private CreateOrganizationUseCase createOrganizationUseCase;
 
+    @Autowired
+    private PlanFixtures planFixtures;
+
     @BeforeAll
     void setUpTenants() {
+        var planId = planFixtures.enterprisePlanId();
         registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Org Tenant X", validCnpj(System.nanoTime()), TENANT_X, Plan.BASIC, null));
+                "Org Tenant X", validCnpj(System.nanoTime()), TENANT_X, planId, null));
         registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Org Tenant Y", validCnpj(System.nanoTime()), TENANT_Y, Plan.BASIC, null));
+                "Org Tenant Y", validCnpj(System.nanoTime()), TENANT_Y, planId, null));
 
         migrationService.migrate(TENANT_X);
         migrationService.migrate(TENANT_Y);

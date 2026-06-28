@@ -21,7 +21,7 @@ public class RegisterMunicipalityUseCase {
         }
         var municipality = new Municipality(
                 command.name(), stripCnpjMask(command.cnpj()),
-                command.subdomain(), command.plan(), command.logo());
+                command.subdomain(), command.planId(), command.logo());
         var saved = repository.save(municipality);
         return MunicipalityView.from(saved);
     }

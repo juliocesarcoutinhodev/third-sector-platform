@@ -12,30 +12,30 @@ public class Municipality {
     private String name;
     private String cnpj;
     private String subdomain;
-    private Plan plan;
+    private UUID planId;
     private String logo;
     private boolean active;
     private Instant createdAt;
     private Instant updatedAt;
 
-    public Municipality(String name, String cnpj, String subdomain, Plan plan, String logo) {
+    public Municipality(String name, String cnpj, String subdomain, UUID planId, String logo) {
         this.name = name;
         this.cnpj = cnpj;
         this.subdomain = subdomain;
-        this.plan = plan;
+        this.planId = planId;
         this.logo = logo;
         this.active = true;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
     }
 
-    public Municipality(UUID id, String name, String cnpj, String subdomain, Plan plan,
+    public Municipality(UUID id, String name, String cnpj, String subdomain, UUID planId,
                         String logo, boolean active, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.name = name;
         this.cnpj = cnpj;
         this.subdomain = subdomain;
-        this.plan = plan;
+        this.planId = planId;
         this.logo = logo;
         this.active = active;
         this.createdAt = createdAt;

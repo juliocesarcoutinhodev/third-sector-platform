@@ -14,4 +14,6 @@ public interface OrganizationRepository {
     Optional<Organization> findByCnpj(String cnpj);
 
     boolean existsByCnpj(String cnpj);
+
+    long count();
 }

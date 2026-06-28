@@ -4,9 +4,9 @@ import br.com.toponesystem.thirdsector.AbstractIntegrationTest;
 import br.com.toponesystem.thirdsector.auth.application.usecase.CreateUserCommand;
 import br.com.toponesystem.thirdsector.auth.application.usecase.CreateUserUseCase;
 import br.com.toponesystem.thirdsector.auth.domain.model.Role;
+import br.com.toponesystem.thirdsector.PlanFixtures;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityCommand;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityUseCase;
-import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationCommand;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationUseCase;
 import br.com.toponesystem.thirdsector.tenant.adapter.out.migration.TenantMigrationService;
@@ -56,12 +56,16 @@ class AuthorizationIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private PlanFixtures planFixtures;
+
     @BeforeAll
     void setUpTenants() {
+        var planId = planFixtures.enterprisePlanId();
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "Auth X", "77777777000191", TENANT_X, Plan.BASIC, null));
+                "Auth X", "77777777000191", TENANT_X, planId, null));
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "Auth Y", "55555555000191", TENANT_Y, Plan.BASIC, null));
+                "Auth Y", "55555555000191", TENANT_Y, planId, null));
         migrationService.migrate(TENANT_X);
         migrationService.migrate(TENANT_Y);
 

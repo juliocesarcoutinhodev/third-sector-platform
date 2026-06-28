@@ -8,9 +8,9 @@ import br.com.toponesystem.thirdsector.auth.domain.model.Role;
 import br.com.toponesystem.thirdsector.auth.domain.port.out.PasswordResetTokenRepository;
 import br.com.toponesystem.thirdsector.auth.domain.port.out.RefreshTokenGenerator;
 import br.com.toponesystem.thirdsector.auth.domain.port.out.TokenHasher;
+import br.com.toponesystem.thirdsector.PlanFixtures;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityCommand;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityUseCase;
-import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationCommand;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationUseCase;
 import br.com.toponesystem.thirdsector.tenant.adapter.out.migration.TenantMigrationService;
@@ -72,10 +72,14 @@ class PasswordResetIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private PlanFixtures planFixtures;
+
     @BeforeAll
     void setUpTenant() {
+        var planId = planFixtures.enterprisePlanId();
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "PwdReset Tenant", "12121212000106", TENANT, Plan.BASIC, null));
+                "PwdReset Tenant", "12121212000106", TENANT, planId, null));
         migrationService.migrate(TENANT);
         TenantContext.setCurrentTenant(TENANT);
         createOrganization.execute(new CreateOrganizationCommand("PwdReset ONG", "12345678000195"));

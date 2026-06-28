@@ -1,4 +1,4 @@
-package br.com.toponesystem.thirdsector.municipality.adapter.out.persistence;
+package br.com.toponesystem.thirdsector.plan.adapter.out.persistence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -6,57 +6,36 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.validator.constraints.br.CNPJ;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "municipality", schema = "master")
+@Table(name = "plan", schema = "master")
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-class MunicipalityEntity {
+class PlanEntity {
 
     @Id
     @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
     private UUID id;
 
     @NotBlank
-    @Size(max = 255)
-    @Column(nullable = false)
+    @Size(max = 50)
+    @Column(length = 50, nullable = false, unique = true)
     private String name;
 
-    @CNPJ
-    @NotBlank
-    @Column(length = 14, nullable = false, unique = true)
-    private String cnpj;
-
-    @NotBlank
-    @Size(max = 63)
-    @Pattern(
-            regexp = "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
-            message = "Subdomain must contain only lowercase letters, numbers, and hyphens"
-    )
-    @Column(length = 63, nullable = false, unique = true)
-    private String subdomain;
-
-    @Column(name = "plan_id", nullable = false)
-    private UUID planId;
-
-    @Size(max = 500)
-    @Column(length = 500)
-    private String logo;
-
-    @Column(nullable = false)
-    private boolean active;
+    @Column
+    private Integer maxOrganizations;
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;

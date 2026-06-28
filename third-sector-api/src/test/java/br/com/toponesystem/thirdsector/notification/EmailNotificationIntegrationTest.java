@@ -1,8 +1,8 @@
 package br.com.toponesystem.thirdsector.notification;
 
+import br.com.toponesystem.thirdsector.PlanFixtures;
 import br.com.toponesystem.thirdsector.AbstractIntegrationTest;
 import br.com.toponesystem.thirdsector.municipality.domain.model.Municipality;
-import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 import br.com.toponesystem.thirdsector.municipality.domain.port.out.MunicipalityRepository;
 import br.com.toponesystem.thirdsector.notification.domain.model.EmailNotification;
 import br.com.toponesystem.thirdsector.notification.domain.port.out.EmailSender;
@@ -68,6 +68,9 @@ class EmailNotificationIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private MunicipalityRepository municipalityRepository;
 
+    @Autowired
+    private PlanFixtures planFixtures;
+
     @BeforeEach
     void setUp() {
         sentEmails.clear();
@@ -102,7 +105,7 @@ class EmailNotificationIntegrationTest extends AbstractIntegrationTest {
         var subdomain = "notify-branding-" + System.nanoTime();
         municipalityRepository.save(
                 new Municipality("Maringá", validCnpj(System.nanoTime()), subdomain,
-                        Plan.BASIC, "https://cdn.example.com/maringa-logo.png"));
+                        planFixtures.basicPlanId(), "https://cdn.example.com/maringa-logo.png"));
 
         emailLatch = new CountDownLatch(1);
 
@@ -136,7 +139,7 @@ class EmailNotificationIntegrationTest extends AbstractIntegrationTest {
         var subdomain = "notify-nologo-" + System.nanoTime();
         municipalityRepository.save(
                 new Municipality("Londrina", validCnpj(System.nanoTime()), subdomain,
-                        Plan.STANDARD, null));
+                        planFixtures.intermediatePlanId(), null));
 
         emailLatch = new CountDownLatch(1);
 
@@ -167,10 +170,10 @@ class EmailNotificationIntegrationTest extends AbstractIntegrationTest {
         var subdomainB = "notify-multi-b-" + System.nanoTime();
         municipalityRepository.save(
                 new Municipality("Curitiba", validCnpj(System.nanoTime()), subdomainA,
-                        Plan.PREMIUM, "https://cdn.example.com/curitiba-logo.png"));
+                        planFixtures.enterprisePlanId(), "https://cdn.example.com/curitiba-logo.png"));
         municipalityRepository.save(
                 new Municipality("Cascavel", validCnpj(System.nanoTime()), subdomainB,
-                        Plan.BASIC, "https://cdn.example.com/cascavel-logo.png"));
+                        planFixtures.basicPlanId(), "https://cdn.example.com/cascavel-logo.png"));
 
         emailLatch = new CountDownLatch(2);
 

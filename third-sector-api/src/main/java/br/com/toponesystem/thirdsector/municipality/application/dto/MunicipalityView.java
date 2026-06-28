@@ -1,7 +1,6 @@
 package br.com.toponesystem.thirdsector.municipality.application.dto;
 
 import br.com.toponesystem.thirdsector.municipality.domain.model.Municipality;
-import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -11,7 +10,7 @@ public record MunicipalityView(
         String name,
         String cnpj,
         String subdomain,
-        Plan plan,
+        UUID planId,
         String logo,
         boolean active,
         Instant createdAt,
@@ -21,7 +20,7 @@ public record MunicipalityView(
     public static MunicipalityView from(Municipality m) {
         return new MunicipalityView(
                 m.getId(), m.getName(), m.getCnpj(), m.getSubdomain(),
-                m.getPlan(), m.getLogo(), m.isActive(), m.getCreatedAt(), m.getUpdatedAt()
+                m.getPlanId(), m.getLogo(), m.isActive(), m.getCreatedAt(), m.getUpdatedAt()
         );
     }
 }

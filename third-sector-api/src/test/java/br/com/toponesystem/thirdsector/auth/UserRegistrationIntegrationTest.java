@@ -7,9 +7,9 @@ import br.com.toponesystem.thirdsector.auth.domain.exception.DuplicateEmailExcep
 import br.com.toponesystem.thirdsector.auth.domain.exception.InvalidUserRoleAssignmentException;
 import br.com.toponesystem.thirdsector.auth.domain.model.Role;
 import br.com.toponesystem.thirdsector.auth.domain.port.out.UserRepository;
+import br.com.toponesystem.thirdsector.PlanFixtures;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityCommand;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityUseCase;
-import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationCommand;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationUseCase;
 import br.com.toponesystem.thirdsector.tenant.adapter.out.migration.TenantMigrationService;
@@ -50,10 +50,14 @@ class UserRegistrationIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private PlanFixtures planFixtures;
+
     @BeforeAll
     void setUpTenant() {
+        var planId = planFixtures.enterprisePlanId();
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "User Registration Tenant", "44444444000191", TENANT, Plan.BASIC, null));
+                "User Registration Tenant", "44444444000191", TENANT, planId, null));
         migrationService.migrate(TENANT);
         TenantContext.setCurrentTenant(TENANT);
         createOrganization.execute(new CreateOrganizationCommand("Teste ONG", "12345678000195"));

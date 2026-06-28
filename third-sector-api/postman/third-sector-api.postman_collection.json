@@ -2,13 +2,13 @@
   "info": {
     "_postman_id": "ts-api-v1",
     "name": "Third Sector API",
-    "description": "# Third Sector API\n\nAPI REST da plataforma SaaS para o terceiro setor brasileiro \u2014 gest\u00e3o de transpar\u00eancia financeira e presta\u00e7\u00e3o de contas p\u00fablicas para organiza\u00e7\u00f5es que recebem transfer\u00eancias de prefeituras.\n\nModelo de neg\u00f3cio B2G: prefeituras licenciam a plataforma para gerenciar organiza\u00e7\u00f5es (ONGs, associa\u00e7\u00f5es) que recebem recursos p\u00fablicos. Aplica\u00e7\u00e3o **multi-tenant** por munic\u00edpio (schema-per-tenant no PostgreSQL).\n\n## Autentica\u00e7\u00e3o\n\nEsta API utiliza **JWT em cookie HttpOnly** \u2014 n\u00e3o h\u00e1 header `Authorization`.\n\n**Fluxo:**\n1. `POST /api/auth/login` \u2192 cookies `access_token` (15 min) e `refresh_token` (7 dias) setados automaticamente\n2. Requests subsequentes s\u00e3o autenticados automaticamente pelo cookie `access_token` enviado pelo Postman\n3. Quando o access token expirar \u2192 `POST /api/auth/refresh` gera novo par de tokens\n\nO Postman gerencia cookies entre requests do mesmo dom\u00ednio automaticamente. **N\u00e3o \u00e9 necess\u00e1rio configurar token manualmente.**\n\n## Multi-tenancy\n\nCada munic\u00edpio \u00e9 um tenant isolado. Em **produ\u00e7\u00e3o**, o tenant \u00e9 resolvido pelo subdom\u00ednio (ex: `maringa.thirdsector.com.br`). Em **desenvolvimento local**, o header `Host` com subdom\u00ednio completo OU o header `X-Tenant-ID` s\u00e3o usados (fallback habilitado no profile `dev`).\n\nEsta collection usa o header `Host: {{tenantSubdomain}}.thirdsector.com.br` em todos os requests.\n\nOs tenants de desenvolvimento conhecidos s\u00e3o: `maringa`, `londrina`, `curitiba`.\n\n## Formato de IDs\n\nTodos os identificadores (id, userId, organizationId, municipalityId) s\u00e3o UUIDs no formato string (ex: \"00000000-0000-0000-0000-000000000001\"). N\u00e3o s\u00e3o n\u00fameros inteiros.\n\n## Vari\u00e1veis da collection\n\n| Vari\u00e1vel | Descri\u00e7\u00e3o | Preenchimento |\n|---|---|---|\n| `baseUrl` | URL base da API | Manual (default: `http://localhost:8080`) |\n| `tenantSubdomain` | Subdom\u00ednio do munic\u00edpio/tenant | Manual (default: `maringa`) |\n| `testUserName` | Nome do usu\u00e1rio de teste | Manual |\n| `testUserEmail` | Email do usu\u00e1rio de teste | Manual |\n| `testUserPassword` | Senha do usu\u00e1rio de teste (m\u00edn. 8 chars, 1 letra + 1 n\u00famero) | Manual |\n| `testUserRole` | Role do usu\u00e1rio (SUPER_ADMIN, MUNICIPALITY_ADM, ORGANIZATION_MANAGER, OPERATOR) | Manual |\n| `testMunicipalityCnpj` | CNPJ v\u00e1lido para teste de munic\u00edpio | Manual |\n| `testMunicipalityPlan` | Plano (BASIC, STANDARD, PREMIUM) | Manual |\n| `organizationId` | ID da organiza\u00e7\u00e3o criada | Autom\u00e1tico (POST Organization) |\n| `municipalityId` | ID do munic\u00edpio criado | Autom\u00e1tico (POST Municipality) |\n\n## Conven\u00e7\u00e3o de erros\n\nToda resposta de erro segue o formato `ErrorResponse`:\n\n```json\n{\n  \"success\": false,\n  \"status\": 422,\n  \"error\": \"Unprocessable Entity\",\n  \"message\": \"Invalid email or password\",\n  \"timestamp\": \"2026-06-21T20:00:00Z\"\n}\n```\n\nErros de valida\u00e7\u00e3o (400) incluem array `errors` com `field` e `message` por campo.\n\nRespostas de sucesso seguem o envelope `ApiResponse<T>` com `success: true`, `message` e `data`.\n\n## Como navegar\n\nOs requests est\u00e3o organizados em pastas por m\u00f3dulo, na ordem l\u00f3gica de uso dentro de cada pasta.\n\n## Ambiente de desenvolvimento\n\nAo subir com o profile `dev`, o `DevDataSeeder` cria automaticamente:\n\n| Entidade | Identificador | Credenciais |\n|---|---|---|\n| ADM da Prefeitura | `admin@dev.local` | `AdminDev1` |\n| Gestor da Organiza\u00e7\u00e3o | `manager@dev.local` | `ManagerDev1` |\n| Organiza\u00e7\u00e3o | id `1` | CNPJ `12345678000195` |\n\nAs vari\u00e1veis `adminEmail`, `adminPassword`, `managerEmail`, `managerPassword` j\u00e1 est\u00e3o preenchidas no environment.\n\nAo subir com o profile , um munic\u00edpio de teste \u00e9 criado automaticamente pelo :\n\n| Par\u00e2metro | Valor |\n|---|---|\n| Nome | Munic\u00edpio de Teste (Dev) |\n| Subdom\u00ednio |  |\n| CNPJ |  |\n| Plano | BASIC |\n\nO schema do tenant \u00e9 migrado automaticamente. O subdom\u00ednio  \u00e9 o valor padr\u00e3o da vari\u00e1vel .\nPara usar em outro tenant de desenvolvimento, utilize  ou  (cadastrados manualmente).\n",
+    "description": "# Third Sector API\n\nAPI REST da plataforma SaaS para o terceiro setor brasileiro — gestão de transparência financeira e prestação de contas públicas para organizações que recebem transferências de prefeituras.\n\nModelo de negócio B2G: prefeituras licenciam a plataforma para gerenciar organizações (ONGs, associações) que recebem recursos públicos. Aplicação **multi-tenant** por município (schema-per-tenant no PostgreSQL).\n\n## Autenticação\n\nEsta API utiliza **JWT em cookie HttpOnly** — não há header `Authorization`.\n\n**Fluxo:**\n1. `POST /api/auth/login` → cookies `access_token` (15 min) e `refresh_token` (7 dias) setados automaticamente\n2. Requests subsequentes são autenticados automaticamente pelo cookie `access_token` enviado pelo Postman\n3. Quando o access token expirar → `POST /api/auth/refresh` gera novo par de tokens\n\nO Postman gerencia cookies entre requests do mesmo domínio automaticamente. **Não é necessário configurar token manualmente.**\n\n## Multi-tenancy\n\nCada município é um tenant isolado. Em **produção**, o tenant é resolvido pelo subdomínio (ex: `maringa.thirdsector.com.br`). Em **desenvolvimento local**, o header `Host` com subdomínio completo OU o header `X-Tenant-ID` são usados (fallback habilitado no profile `dev`).\n\nEsta collection usa o header `Host: {{tenantSubdomain}}.thirdsector.com.br` em todos os requests.\n\nOs tenants de desenvolvimento conhecidos são: `maringa`, `londrina`, `curitiba`.\n\n## Formato de IDs\n\nTodos os identificadores (id, userId, organizationId, municipalityId) são UUIDs no formato string (ex: \"00000000-0000-0000-0000-000000000001\"). Não são números inteiros.\n\n## Variáveis da collection\n\n| Variável | Descrição | Preenchimento |\n|---|---|---|\n| `baseUrl` | URL base da API | Manual (default: `http://localhost:8080`) |\n| `tenantSubdomain` | Subdomínio do município/tenant | Manual (default: `maringa`) |\n| `testUserName` | Nome do usuário de teste | Manual |\n| `testUserEmail` | Email do usuário de teste | Manual |\n| `testUserPassword` | Senha do usuário de teste (mín. 8 chars, 1 letra + 1 número) | Manual |\n| `testUserRole` | Role do usuário (SUPER_ADMIN, MUNICIPALITY_ADM, ORGANIZATION_MANAGER, OPERATOR) | Manual |\n| `testMunicipalityCnpj` | CNPJ válido para teste de município | Manual |\n| `testMunicipalityPlan` | Plano (BASIC, STANDARD, PREMIUM) | Manual |\n| `organizationId` | ID da organização criada | Automático (POST Organization) |\n| `municipalityId` | ID do município criado | Automático (POST Municipality) |\n\n## Convenção de erros\n\nToda resposta de erro segue o formato `ErrorResponse`:\n\n```json\n{\n  \"success\": false,\n  \"status\": 422,\n  \"error\": \"Unprocessable Entity\",\n  \"message\": \"Invalid email or password\",\n  \"timestamp\": \"2026-06-21T20:00:00Z\"\n}\n```\n\nErros de validação (400) incluem array `errors` com `field` e `message` por campo.\n\nRespostas de sucesso seguem o envelope `ApiResponse<T>` com `success: true`, `message` e `data`.\n\n## Como navegar\n\nOs requests estão organizados em pastas por módulo, na ordem lógica de uso dentro de cada pasta.\n\n## Ambiente de desenvolvimento\n\nAo subir com o profile `dev`, o `DevDataSeeder` cria automaticamente:\n\n| Entidade | Identificador | Credenciais |\n|---|---|---|\n| ADM da Prefeitura | `admin@dev.local` | `AdminDev1` |\n| Gestor da Organização | `manager@dev.local` | `ManagerDev1` |\n| Organização | id `1` | CNPJ `12345678000195` |\n\nAs variáveis `adminEmail`, `adminPassword`, `managerEmail`, `managerPassword` já estão preenchidas no environment.\n\nAo subir com o profile , um município de teste é criado automaticamente pelo :\n\n| Parâmetro | Valor |\n|---|---|\n| Nome | Município de Teste (Dev) |\n| Subdomínio |  |\n| CNPJ |  |\n| Plano | BASIC |\n\nO schema do tenant é migrado automaticamente. O subdomínio  é o valor padrão da variável .\nPara usar em outro tenant de desenvolvimento, utilize  ou  (cadastrados manualmente).\n",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
       "name": "Auth",
-      "description": "Endpoints de autentica\u00e7\u00e3o: login com JWT em cookie HttpOnly e refresh token com rotation.",
+      "description": "Endpoints de autenticação: login com JWT em cookie HttpOnly e refresh token com rotation.",
       "item": [
         {
           "name": "POST - Login",
@@ -23,7 +23,7 @@
                   "    pm.expect(cookies).to.include(\"access_token\");",
                   "    pm.expect(cookies).to.include(\"refresh_token\");",
                   "});",
-                  "pm.test(\"Token N\u00c3O est\u00e1 no body\", () => {",
+                  "pm.test(\"Token NÃO está no body\", () => {",
                   "    const body = pm.response.json();",
                   "    pm.expect(JSON.stringify(body)).to.not.include(\"token\");",
                   "    pm.expect(JSON.stringify(body)).to.not.include(\"access_token\");",
@@ -79,7 +79,7 @@
                   "value": "refresh_token=abc123...; HttpOnly; Secure; SameSite=Lax; Path=/api/auth/refresh; Max-Age=604800"
                 }
               ],
-              "body": "{\n  \"userId\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"Jo\u00e3o Silva\",\n  \"email\": \"joao@example.com\",\n  \"role\": \"ORGANIZATION_MANAGER\",\n  \"organizationId\": \"00000000-0000-0000-0000-000000000002\"\n}"
+              "body": "{\n  \"userId\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"João Silva\",\n  \"email\": \"joao@example.com\",\n  \"role\": \"ORGANIZATION_MANAGER\",\n  \"organizationId\": \"00000000-0000-0000-0000-000000000002\"\n}"
             },
             {
               "name": "Error - 422 Invalid credentials",
@@ -242,7 +242,7 @@
               "name": "Success - 200 (same for known/unknown email)",
               "status": "OK",
               "code": 200,
-              "body": "{\"success\": true, \"message\": \"Se o e-mail estiver cadastrado, um link de redefini\u00e7\u00e3o foi enviado.\"}"
+              "body": "{\"success\": true, \"message\": \"Se o e-mail estiver cadastrado, um link de redefinição foi enviado.\"}"
             }
           ]
         },
@@ -288,7 +288,7 @@
               "name": "Error - 422 Invalid token",
               "status": "Unprocessable Entity",
               "code": 422,
-              "body": "{\"success\": false, \"status\": 422, \"error\": \"Unprocessable Entity\", \"message\": \"Token de redefini\u00e7\u00e3o inv\u00e1lido ou expirado.\"}"
+              "body": "{\"success\": false, \"status\": 422, \"error\": \"Unprocessable Entity\", \"message\": \"Token de redefinição inválido ou expirado.\"}"
             }
           ]
         }
@@ -296,7 +296,7 @@
     },
     {
       "name": "Users",
-      "description": "Cadastro de usu\u00e1rios. Requer autentica\u00e7\u00e3o (cookie access_token obtido via POST /api/auth/login).",
+      "description": "Cadastro de usuários. Requer autenticação (cookie access_token obtido via POST /api/auth/login).",
       "item": [
         {
           "name": "POST - Register User",
@@ -349,7 +349,7 @@
               "name": "Success - 201 Created",
               "status": "Created",
               "code": 201,
-              "body": "{\n  \"success\": true,\n  \"message\": \"Usu\u00e1rio cadastrado com sucesso.\",\n  \"data\": {\n    \"id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"Jo\u00e3o Silva\",\n    \"email\": \"joao@example.com\",\n    \"role\": \"ORGANIZATION_MANAGER\",\n    \"organizationId\": \"00000000-0000-0000-0000-000000000001\",\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"Usuário cadastrado com sucesso.\",\n  \"data\": {\n    \"id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao@example.com\",\n    \"role\": \"ORGANIZATION_MANAGER\",\n    \"organizationId\": \"00000000-0000-0000-0000-000000000001\",\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
             },
             {
               "name": "Error - 409 Duplicate email",
@@ -367,7 +367,7 @@
               "name": "Error - 400 Password validation",
               "status": "Bad Request",
               "code": 400,
-              "body": "{\n  \"success\": false,\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Erro de valida\u00e7\u00e3o.\",\n  \"errors\": [\n    { \"field\": \"password\", \"message\": \"must contain at least one letter and one number\" }\n  ],\n  \"timestamp\": \"2026-06-21T20:00:00Z\"\n}"
+              "body": "{\n  \"success\": false,\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Erro de validação.\",\n  \"errors\": [\n    { \"field\": \"password\", \"message\": \"must contain at least one letter and one number\" }\n  ],\n  \"timestamp\": \"2026-06-21T20:00:00Z\"\n}"
             }
           ]
         }
@@ -375,7 +375,7 @@
     },
     {
       "name": "Municipalities",
-      "description": "Cadastro e consulta de munic\u00edpios (tenants). Opera\u00e7\u00f5es no schema master (cross-tenant).",
+      "description": "Cadastro e consulta de municípios (tenants). Operações no schema master (cross-tenant).",
       "item": [
         {
           "name": "POST - Register Municipality",
@@ -385,7 +385,7 @@
               "script": {
                 "exec": [
                   "pm.test(\"Status 201 Created\", () => pm.response.to.have.status(201));",
-                  "pm.test(\"Munic\u00edpio criado\", () => {",
+                  "pm.test(\"Município criado\", () => {",
                   "    const body = pm.response.json();",
                   "    pm.expect(body.success).to.be.true;",
                   "    pm.expect(body.data.id).to.be.a(\"string\");",
@@ -410,7 +410,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Maring\u00e1\",\n  \"cnpj\": \"{{testMunicipalityCnpj}}\",\n  \"subdomain\": \"{{tenantSubdomain}}\",\n  \"plan\": \"{{testMunicipalityPlan}}\",\n  \"logo\": null\n}"
+              "raw": "{\n  \"name\": \"Maringá\",\n  \"cnpj\": \"{{testMunicipalityCnpj}}\",\n  \"subdomain\": \"{{tenantSubdomain}}\",\n  \"planId\": \"{{testMunicipalityPlanId}}\",\n  \"logo\": null\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/municipalities",
@@ -428,7 +428,7 @@
               "name": "Success - 201 Created",
               "status": "Created",
               "code": 201,
-              "body": "{\n  \"success\": true,\n  \"message\": \"Munic\u00edpio cadastrado com sucesso.\",\n  \"data\": {\n    \"id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"Maring\u00e1\",\n    \"cnpj\": \"11222333000181\",\n    \"subdomain\": \"maringa\",\n    \"plan\": \"BASIC\",\n    \"logo\": null,\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\",\n    \"updatedAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"Município cadastrado com sucesso.\",\n  \"data\": {\n    \"id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"Maringá\",\n    \"cnpj\": \"11222333000181\",\n    \"subdomain\": \"maringa\",\n    \"planId\": \"00000000-0000-0000-0000-000000000010\",\n    \"logo\": null,\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\",\n    \"updatedAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
             },
             {
               "name": "Error - 409 Duplicate subdomain",
@@ -440,7 +440,7 @@
               "name": "Error - 400 Invalid CNPJ",
               "status": "Bad Request",
               "code": 400,
-              "body": "{\n  \"success\": false,\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Erro de valida\u00e7\u00e3o.\",\n  \"errors\": [\n    { \"field\": \"cnpj\", \"message\": \"n\u00famero do registro de contribuinte corporativo brasileiro (CNPJ) inv\u00e1lido\" }\n  ],\n  \"timestamp\": \"2026-06-21T20:00:00Z\"\n}"
+              "body": "{\n  \"success\": false,\n  \"status\": 400,\n  \"error\": \"Bad Request\",\n  \"message\": \"Erro de validação.\",\n  \"errors\": [\n    { \"field\": \"cnpj\", \"message\": \"número do registro de contribuinte corporativo brasileiro (CNPJ) inválido\" }\n  ],\n  \"timestamp\": \"2026-06-21T20:00:00Z\"\n}"
             }
           ]
         },
@@ -465,7 +465,7 @@
               "name": "Success - 200 OK",
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"success\": true,\n  \"message\": \"Munic\u00edpios ativos listados com sucesso.\",\n  \"data\": [\n    {\n      \"id\": \"00000000-0000-0000-0000-000000000001\",\n      \"name\": \"Maring\u00e1\",\n      \"cnpj\": \"11222333000181\",\n      \"subdomain\": \"maringa\",\n      \"plan\": \"BASIC\",\n      \"logo\": null,\n      \"active\": true,\n      \"createdAt\": \"2026-06-21T20:00:00Z\",\n      \"updatedAt\": \"2026-06-21T20:00:00Z\"\n    }\n  ]\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"Municípios ativos listados com sucesso.\",\n  \"data\": [\n    {\n      \"id\": \"00000000-0000-0000-0000-000000000001\",\n      \"name\": \"Maringá\",\n      \"cnpj\": \"11222333000181\",\n      \"subdomain\": \"maringa\",\n      \"planId\": \"00000000-0000-0000-0000-000000000010\",\n      \"logo\": null,\n      \"active\": true,\n      \"createdAt\": \"2026-06-21T20:00:00Z\",\n      \"updatedAt\": \"2026-06-21T20:00:00Z\"\n    }\n  ]\n}"
             }
           ]
         },
@@ -492,7 +492,7 @@
               "name": "Success - 200 OK",
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"success\": true,\n  \"message\": \"Munic\u00edpio encontrado.\",\n  \"data\": {\n    \"id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"Maring\u00e1\",\n    \"cnpj\": \"11222333000181\",\n    \"subdomain\": \"maringa\",\n    \"plan\": \"BASIC\",\n    \"logo\": null,\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\",\n    \"updatedAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"Município encontrado.\",\n  \"data\": {\n    \"id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"Maringá\",\n    \"cnpj\": \"11222333000181\",\n    \"subdomain\": \"maringa\",\n    \"planId\": \"00000000-0000-0000-0000-000000000010\",\n    \"logo\": null,\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\",\n    \"updatedAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
             },
             {
               "name": "Error - 404 Not Found",
@@ -524,13 +524,198 @@
               "name": "Success - 200 OK",
               "status": "OK",
               "code": 200,
-              "body": "{\n  \"success\": true,\n  \"message\": \"Munic\u00edpio encontrado.\",\n  \"data\": {\n    \"id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"Maring\u00e1\",\n    \"cnpj\": \"11222333000181\",\n    \"subdomain\": \"maringa\",\n    \"plan\": \"BASIC\",\n    \"logo\": null,\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\",\n    \"updatedAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"Município encontrado.\",\n  \"data\": {\n    \"id\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"Maringá\",\n    \"cnpj\": \"11222333000181\",\n    \"subdomain\": \"maringa\",\n    \"planId\": \"00000000-0000-0000-0000-000000000010\",\n    \"logo\": null,\n    \"active\": true,\n    \"createdAt\": \"2026-06-21T20:00:00Z\",\n    \"updatedAt\": \"2026-06-21T20:00:00Z\"\n  }\n}"
             },
             {
               "name": "Error - 404 Not Found",
               "status": "Not Found",
               "code": 404,
               "body": "{\n  \"success\": false,\n  \"status\": 404,\n  \"error\": \"Not Found\",\n  \"message\": \"Municipality not found\",\n  \"timestamp\": \"2026-06-21T20:00:00Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Plans",
+      "description": "Gestão de planos (Super Admin only). Limites configuráveis de organizações por plano.",
+      "item": [
+        {
+          "name": "GET - List Plans",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Retorna lista de planos\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.success).to.be.true;",
+                  "    pm.expect(body.data).to.be.an(\"array\");",
+                  "    pm.expect(body.data.length).to.be.at.least(3);",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "if (body.data && body.data.length > 0) {",
+                  "    pm.collectionVariables.set(\"planId\", body.data[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Host",
+                "value": "{{tenantSubdomain}}.thirdsector.com.br"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "plans"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Planos listados com sucesso.\",\n  \"data\": [\n    {\n      \"id\": \"00000000-0000-0000-0000-000000000010\",\n      \"name\": \"BASIC\",\n      \"maxOrganizations\": 5,\n      \"createdAt\": \"2026-06-28T12:00:00Z\",\n      \"updatedAt\": \"2026-06-28T12:00:00Z\"\n    },\n    {\n      \"id\": \"00000000-0000-0000-0000-000000000011\",\n      \"name\": \"INTERMEDIATE\",\n      \"maxOrganizations\": 20,\n      \"createdAt\": \"2026-06-28T12:00:00Z\",\n      \"updatedAt\": \"2026-06-28T12:00:00Z\"\n    },\n    {\n      \"id\": \"00000000-0000-0000-0000-000000000012\",\n      \"name\": \"ENTERPRISE\",\n      \"maxOrganizations\": null,\n      \"createdAt\": \"2026-06-28T12:00:00Z\",\n      \"updatedAt\": \"2026-06-28T12:00:00Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST - Create Plan",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Plano criado\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.success).to.be.true;",
+                  "    pm.expect(body.data.id).to.be.a(\"string\");",
+                  "    pm.expect(body.data.name).to.be.a(\"string\");",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "if (body.data && body.data.id) {",
+                  "    pm.collectionVariables.set(\"newPlanId\", body.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Host",
+                "value": "{{tenantSubdomain}}.thirdsector.com.br"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"CUSTOM\",\n  \"maxOrganizations\": 50\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "plans"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success - 201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Plano criado com sucesso.\",\n  \"data\": {\n    \"id\": \"00000000-0000-0000-0000-000000000020\",\n    \"name\": \"CUSTOM\",\n    \"maxOrganizations\": 50,\n    \"createdAt\": \"2026-06-28T12:00:00Z\",\n    \"updatedAt\": \"2026-06-28T12:00:00Z\"\n  }\n}"
+            },
+            {
+              "name": "Error - 403 Forbidden (non-Super Admin)",
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"success\": false,\n  \"status\": 403,\n  \"error\": \"Forbidden\",\n  \"message\": \"Acesso negado.\",\n  \"timestamp\": \"2026-06-28T12:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH - Update Plan Limit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Plano atualizado\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.success).to.be.true;",
+                  "    pm.expect(body.data.maxOrganizations).to.eql(10);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Host",
+                "value": "{{tenantSubdomain}}.thirdsector.com.br"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"maxOrganizations\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/plans/{{planId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "plans",
+                "{{planId}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Plano atualizado com sucesso.\",\n  \"data\": {\n    \"id\": \"00000000-0000-0000-0000-000000000010\",\n    \"name\": \"BASIC\",\n    \"maxOrganizations\": 10,\n    \"createdAt\": \"2026-06-28T12:00:00Z\",\n    \"updatedAt\": \"2026-06-28T12:05:00Z\"\n  }\n}"
+            },
+            {
+              "name": "Error - 404 Plan not found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"success\": false,\n  \"status\": 404,\n  \"error\": \"Not Found\",\n  \"message\": \"Plano com id '00000000-0000-0000-0000-000000000099' nao encontrado.\",\n  \"timestamp\": \"2026-06-28T12:00:00Z\"\n}"
             }
           ]
         }

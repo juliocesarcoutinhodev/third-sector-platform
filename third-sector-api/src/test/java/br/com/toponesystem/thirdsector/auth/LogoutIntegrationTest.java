@@ -4,9 +4,9 @@ import br.com.toponesystem.thirdsector.AbstractIntegrationTest;
 import br.com.toponesystem.thirdsector.auth.application.usecase.CreateUserCommand;
 import br.com.toponesystem.thirdsector.auth.application.usecase.CreateUserUseCase;
 import br.com.toponesystem.thirdsector.auth.domain.model.Role;
+import br.com.toponesystem.thirdsector.PlanFixtures;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityCommand;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityUseCase;
-import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationCommand;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationUseCase;
 import br.com.toponesystem.thirdsector.tenant.adapter.out.migration.TenantMigrationService;
@@ -55,10 +55,14 @@ class LogoutIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private PlanFixtures planFixtures;
+
     @BeforeAll
     void setUpTenant() {
+        var planId = planFixtures.enterprisePlanId();
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "Logout Test Tenant", "99999999000191", TENANT, Plan.BASIC, null));
+                "Logout Test Tenant", "99999999000191", TENANT, planId, null));
         migrationService.migrate(TENANT);
         TenantContext.setCurrentTenant(TENANT);
         createOrganization.execute(new CreateOrganizationCommand("Logout ONG", "12345678000195"));

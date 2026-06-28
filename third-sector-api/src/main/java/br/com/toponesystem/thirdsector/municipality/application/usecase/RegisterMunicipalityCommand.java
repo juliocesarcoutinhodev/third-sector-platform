@@ -1,11 +1,11 @@
 package br.com.toponesystem.thirdsector.municipality.application.usecase;
 
-import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
+import java.util.UUID;
 
 public record RegisterMunicipalityCommand(
         String name,
         String cnpj,
         String subdomain,
-        Plan plan,
+        UUID planId,
         String logo
 ) {}

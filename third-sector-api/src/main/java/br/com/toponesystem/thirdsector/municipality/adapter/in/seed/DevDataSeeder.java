@@ -7,10 +7,10 @@ import br.com.toponesystem.thirdsector.auth.domain.model.Role;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityCommand;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityUseCase;
 import br.com.toponesystem.thirdsector.municipality.domain.exception.DuplicateSubdomainException;
-import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationCommand;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationUseCase;
 import br.com.toponesystem.thirdsector.organization.domain.exception.DuplicateCnpjException;
+import br.com.toponesystem.thirdsector.plan.domain.port.out.PlanRepository;
 import br.com.toponesystem.thirdsector.tenant.adapter.out.migration.TenantMigrationService;
 import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +43,7 @@ class DevDataSeeder implements CommandLineRunner {
     private final TenantMigrationService tenantMigrationService;
     private final CreateUserUseCase createUserUseCase;
     private final CreateOrganizationUseCase createOrganizationUseCase;
+    private final PlanRepository planRepository;
 
     @Override
     public void run(String... args) {
@@ -56,9 +57,12 @@ class DevDataSeeder implements CommandLineRunner {
 
     private void seedMunicipality() {
         log.info("Seeding test municipality '{}'", DEV_SUBDOMAIN);
+        var basicPlanId = planRepository.findByName("BASIC")
+                .orElseThrow(() -> new IllegalStateException("BASIC plan not found in seed data"))
+                .getId();
         try {
             registerMunicipalityUseCase.execute(new RegisterMunicipalityCommand(
-                    DEV_MUNICIPALITY_NAME, DEV_CNPJ, DEV_SUBDOMAIN, Plan.BASIC, null));
+                    DEV_MUNICIPALITY_NAME, DEV_CNPJ, DEV_SUBDOMAIN, basicPlanId, null));
             log.info("Test municipality '{}' created", DEV_SUBDOMAIN);
         } catch (DuplicateSubdomainException e) {
             log.info("Test municipality '{}' already exists", DEV_SUBDOMAIN);

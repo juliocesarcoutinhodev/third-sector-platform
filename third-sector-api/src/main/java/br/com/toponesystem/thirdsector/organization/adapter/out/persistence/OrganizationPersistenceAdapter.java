@@ -42,4 +42,9 @@ class OrganizationPersistenceAdapter implements OrganizationRepository {
     public boolean existsByCnpj(String cnpj) {
         return jpaRepo.existsByCnpj(cnpj);
     }
+
+    @Override
+    public long count() {
+        return jpaRepo.count();
+    }
 }

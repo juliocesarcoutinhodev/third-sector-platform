@@ -6,9 +6,9 @@ import br.com.toponesystem.thirdsector.auth.application.usecase.CreateUserUseCas
 import br.com.toponesystem.thirdsector.auth.application.usecase.LoginCommand;
 import br.com.toponesystem.thirdsector.auth.application.usecase.LoginUseCase;
 import br.com.toponesystem.thirdsector.auth.domain.model.Role;
+import br.com.toponesystem.thirdsector.PlanFixtures;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityCommand;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityUseCase;
-import br.com.toponesystem.thirdsector.municipality.domain.model.Plan;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationCommand;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationUseCase;
 import br.com.toponesystem.thirdsector.tenant.adapter.out.migration.TenantMigrationService;
@@ -63,10 +63,14 @@ class RefreshTokenIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private PlanFixtures planFixtures;
+
     @BeforeAll
     void setUpTenant() {
+        var planId = planFixtures.enterprisePlanId();
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "Refresh Test Tenant", "88888888000191", TENANT, Plan.BASIC, null));
+                "Refresh Test Tenant", "88888888000191", TENANT, planId, null));
         migrationService.migrate(TENANT);
         TenantContext.setCurrentTenant(TENANT);
         createOrganization.execute(new CreateOrganizationCommand("Refresh ONG", "12345678000195"));
