@@ -182,6 +182,11 @@ com validação de CNPJ via `@CNPJ` (Hibernate Validator), strip de máscara no 
 e expõe API cross-module (`MunicipalityDataProvider`) consumida pelo módulo `notification`
 para branding de e-mails (nome e logo da prefeitura).
 
+**Provisionamento automático de tenant:** ao registrar um município via `POST /api/municipalities`,
+o schema do tenant é criado automaticamente com todas as migrations — não é necessário
+reiniciar a aplicação. O `TenantProvisioningPort` (porta hexagonal) é invocado pelo controller
+e implementado via `TenantMigrationService` (Flyway).
+
 **Padrão de mapeamento via MapStruct:** entidades JPA precisam de `@Builder`
 (Lombok) para que o MapStruct consiga construir instâncias sem setters públicos.
 O mapper (`*EntityMapper`) é injetado no `*PersistenceAdapter` e contém apenas
@@ -317,16 +322,12 @@ Ao subir com profile `dev`, o `DevDataSeeder` cria automaticamente:
 
 | Entidade | Identificador | Credenciais / Dados |
 |---|---|---|
-| Município | subdomínio `maringa` | CNPJ `11222333000181`, plano BASIC |
-| ADM da Prefeitura | `admin@dev.local` | Senha `AdminDev1`, role `MUNICIPALITY_ADM` |
-| Organização | CNPJ `12345678000195` | "Organização de Teste (Dev)" |
-|| Gestor da Organização | `manager@dev.local` | Senha `ManagerDev1`, role `ORGANIZATION_MANAGER` |
-|| Super Admin | `superadmin@dev.local` | Senha `SuperAdminDev1`, role `SUPER_ADMIN` |
+| Super Admin | `superadmin@dev.local` | Senha `SuperAdminDev1`, role `SUPER_ADMIN` |
 
-**Ordem de criação:** super admin → município → migration do schema → ADM → organização → gestor.
-**Idempotente:** reiniciar a aplicação não duplica registros.
+Municípios, usuários e organizações são criados via API pelo Super Admin — não há seed automático.
+Consulte a collection do Postman para o fluxo completo.
 
-As credenciais estão disponíveis como variáveis de collection no Postman (`adminEmail`, `adminPassword`, `managerEmail`, `managerPassword`).
+As credenciais estão disponíveis como variáveis de collection no Postman (`adminEmail`, `adminPassword`).
 
 ## Configuração local
 
@@ -469,6 +470,8 @@ O schema do banco é versionado pelo Flyway. As migrations são separadas por es
 
 No startup, o `TenantMigrationStartupRunner` aplica as migrations do master e depois
 itera sobre todos os municípios ativos aplicando as migrations nos schemas tenant.
+Além disso, ao registrar um novo município via API, o schema tenant é criado
+imediatamente via `TenantProvisioningPort` — não é necessário reiniciar.
 
 Para inspecionar o histórico de migrações:
 

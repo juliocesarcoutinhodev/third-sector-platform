@@ -472,7 +472,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Maringá\",\n  \"cnpj\": \"{{testMunicipalityCnpj}}\",\n  \"subdomain\": \"{{tenantSubdomain}}\",\n  \"planId\": \"{{testMunicipalityPlanId}}\",\n  \"logo\": null\n}"
+              "raw": "{\n  \"name\": \"Maringá\",\n  \"cnpj\": \"{{testMunicipalityCnpj}}\",\n  \"subdomain\": \"{{tenantSubdomain}}\",\n  \"planId\": \"{{planId}}\",\n  \"logo\": null\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/municipalities",
