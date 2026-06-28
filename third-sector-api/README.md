@@ -210,6 +210,7 @@ reconstruir qualquer estado vindo da persistência.
 |---|---|---|
 | `POST` | `/api/users` | Cadastro de usuário (BCrypt, evento `UserRegisteredEvent`) |
 | `POST` | `/api/auth/login` | Login (200 + `ApiResponse<LoginResponse>` + cookies) |
+| `POST` | `/api/auth/super-admin/login` | Login Super Admin (200 + `ApiResponse<LoginResponse>` + cookie, sem refresh token) |
 | `POST` | `/api/auth/refresh` | Rotation (200 + `ApiResponse<LoginResponse>` + cookies) |
 | `POST` | `/api/auth/logout` | Logout (204 No Content, limpa cookies, idempotente) |
 | `POST` | `/api/auth/password-reset/request` | Solicita redefinição (200, resposta idêntica exista ou não) |
@@ -356,6 +357,39 @@ A API lê as variáveis automaticamente de `../infra/.env` no perfil `dev`
 ```
 
 A aplicação sobe em `http://localhost:8080` com o perfil `dev`.
+
+### Login Super Admin
+
+O Super Admin faz login pelo endpoint `POST /api/auth/super-admin/login`, que autentica
+contra a tabela `master.super_admin` — **sem vinculo com nenhum tenant**.
+
+```bash
+curl -X POST http://localhost:8080/api/auth/super-admin/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"superadmin@dev.local","password":"SuperAdminDev1"}'
+```
+
+Resposta (200 OK):
+```json
+{
+  "success": true,
+  "message": "Login realizado com sucesso.",
+  "data": {
+    "userId": "...",
+    "name": "Super Admin (Dev)",
+    "email": "superadmin@dev.local",
+    "role": "SUPER_ADMIN"
+  }
+}
+```
+
+O cookie `access_token` e setado automaticamente. O Super Admin **nao recebe refresh token**
+— a sessao expira com o access token e um novo login e necessario.
+
+**Importante:** O login de Super Admin NAO exige header `Host` com subdominio de tenant.
+O `TenantFilter` detecta o JWT com role `SUPER_ADMIN` e permite requests sem tenant.
+Para operacoes em schemas de tenant (ex: criar usuarios), o Super Admin DEVE enviar o
+header `Host` ou `X-Tenant-ID` para que o filtro resolva o tenant correto.
 
 ### Criar Super Admin (produção)
 

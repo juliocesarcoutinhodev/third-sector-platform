@@ -8,10 +8,10 @@
   "item": [
     {
       "name": "Auth",
-      "description": "Endpoints de autenticação: login com JWT em cookie HttpOnly e refresh token com rotation.",
+      "description": "Endpoints de autenticação: login com JWT em cookie HttpOnly e refresh token com rotation.\n\n**Login Principal (Super Admin)**: usa as credenciais `adminEmail`/`adminPassword` do seed DEV (`superadmin@dev.local`). O Super Admin é criado via CLI ou seed e tem acesso irrestrito.\n**Login Gestor**: login alternativo para ORGANIZATION_MANAGER dentro de um tenant.",
       "item": [
         {
-          "name": "POST - Login",
+          "name": "POST - Login (Super Admin)",
           "event": [
             {
               "listen": "test",
@@ -23,14 +23,19 @@
                   "    pm.expect(cookies).to.include(\"access_token\");",
                   "    pm.expect(cookies).to.include(\"refresh_token\");",
                   "});",
-                  "pm.test(\"Token NÃO está no body\", () => {",
+                  "pm.test(\"Token NAO esta no body\", () => {",
                   "    const body = pm.response.json();",
                   "    pm.expect(JSON.stringify(body)).to.not.include(\"token\");",
                   "    pm.expect(JSON.stringify(body)).to.not.include(\"access_token\");",
                   "});",
+                  "pm.test(\"Role e SUPER_ADMIN\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.data.role).to.eql(\"SUPER_ADMIN\");",
+                  "    pm.expect(body.data.organizationId).to.be.null;",
+                  "});",
                   "",
                   "const body = pm.response.json();",
-                  "if (body.userId) pm.collectionVariables.set(\"userId\", body.userId);"
+                  "if (body.data && body.data.userId) pm.collectionVariables.set(\"userId\", body.data.userId);"
                 ],
                 "type": "text/javascript"
               }
@@ -50,7 +55,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{testUserEmail}}\",\n  \"password\": \"{{testUserPassword}}\"\n}"
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/login",
@@ -66,7 +71,7 @@
           },
           "response": [
             {
-              "name": "Success - 200 OK",
+              "name": "Success - 200 OK (Super Admin)",
               "status": "OK",
               "code": 200,
               "header": [
@@ -79,7 +84,82 @@
                   "value": "refresh_token=abc123...; HttpOnly; Secure; SameSite=Lax; Path=/api/auth/refresh; Max-Age=604800"
                 }
               ],
-              "body": "{\n  \"userId\": \"00000000-0000-0000-0000-000000000001\",\n  \"name\": \"João Silva\",\n  \"email\": \"joao@example.com\",\n  \"role\": \"ORGANIZATION_MANAGER\",\n  \"organizationId\": \"00000000-0000-0000-0000-000000000002\"\n}"
+              "body": "{\"success\":true,\"message\":\"Login realizado com sucesso.\",\"data\":{\"userId\":\"00000000-0000-0000-0000-000000000001\",\"name\":\"Super Admin (Dev)\",\"email\":\"superadmin@dev.local\",\"role\":\"SUPER_ADMIN\"}}"
+            },
+            {
+              "name": "Error - 422 Invalid credentials",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "body": "{\n  \"success\": false,\n  \"status\": 422,\n  \"error\": \"Unprocessable Entity\",\n  \"message\": \"Invalid email or password\",\n  \"timestamp\": \"2026-06-21T20:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST - Login (Gestor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Cookie access_token setado\", () => {",
+                  "    const cookies = pm.response.headers.get(\"Set-Cookie\");",
+                  "    pm.expect(cookies).to.include(\"access_token\");",
+                  "    pm.expect(cookies).to.include(\"refresh_token\");",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "if (body.data && body.data.userId) pm.collectionVariables.set(\"userId\", body.data.userId);",
+                  "if (body.data && body.data.organizationId) pm.collectionVariables.set(\"organizationId\", body.data.organizationId);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Host",
+                "value": "{{tenantSubdomain}}.thirdsector.com.br"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{managerEmail}}\",\n  \"password\": \"{{managerPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK (Gestor)",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Set-Cookie",
+                  "value": "access_token=eyJ...; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=900"
+                },
+                {
+                  "key": "Set-Cookie",
+                  "value": "refresh_token=abc123...; HttpOnly; Secure; SameSite=Lax; Path=/api/auth/refresh; Max-Age=604800"
+                }
+              ],
+              "body": "{\"success\":true,\"message\":\"Login realizado com sucesso.\",\"data\":{\"userId\":\"00000000-0000-0000-0000-000000000002\",\"name\":\"Gestor de Teste\",\"email\":\"manager@dev.local\",\"role\":\"ORGANIZATION_MANAGER\",\"organizationId\":\"00000000-0000-0000-0000-000000000010\"}}"
             },
             {
               "name": "Error - 422 Invalid credentials",
@@ -289,6 +369,72 @@
               "status": "Unprocessable Entity",
               "code": 422,
               "body": "{\"success\": false, \"status\": 422, \"error\": \"Unprocessable Entity\", \"message\": \"Token de redefinição inválido ou expirado.\"}"
+            }
+          ]
+        },
+        {
+          "name": "POST - Super Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Cookie access_token setado\", () => {",
+                  "    const cookies = pm.response.headers.get(\"Set-Cookie\");",
+                  "    pm.expect(cookies).to.include(\"access_token\");",
+                  "});",
+                  "pm.test(\"Token NAO esta no body\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(JSON.stringify(body)).to.not.include(\"token\");",
+                  "});",
+                  "",
+                  "const body = pm.response.json();",
+                  "if (body.data && body.data.userId) {",
+                  "    pm.collectionVariables.set(\"superAdminUserId\", body.data.userId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/super-admin/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "super-admin",
+                "login"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Login realizado com sucesso.\",\n  \"data\": {\n    \"userId\": \"00000000-0000-0000-0000-000000000001\",\n    \"name\": \"Super Admin (Dev)\",\n    \"email\": \"superadmin@dev.local\",\n    \"role\": \"SUPER_ADMIN\",\n    \"organizationId\": null\n  }\n}"
+            },
+            {
+              "name": "Error - 422 Invalid credentials",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "body": "{\n  \"success\": false,\n  \"status\": 422,\n  \"error\": \"Unprocessable Entity\",\n  \"message\": \"E-mail ou senha inválidos.\",\n  \"timestamp\": \"2026-06-28T12:00:00Z\"\n}"
             }
           ]
         }

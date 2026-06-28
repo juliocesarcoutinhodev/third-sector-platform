@@ -3,32 +3,44 @@ package br.com.toponesystem.thirdsector.tenant.adapter.in.web;
 import br.com.toponesystem.thirdsector.tenant.config.TenantProperties;
 import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
 import br.com.toponesystem.thirdsector.tenant.domain.port.out.TenantValidator;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 1)
-@RequiredArgsConstructor
 class TenantFilter extends OncePerRequestFilter {
 
     private static final List<String> BYPASS_PREFIXES = List.of(
-            "/actuator", "/swagger-ui", "/v3/api-docs"
+            "/actuator", "/swagger-ui", "/v3/api-docs", "/api/auth/super-admin"
     );
 
     private final TenantProperties properties;
     private final TenantValidator tenantValidator;
+    private final String jwtSecret;
+
+    TenantFilter(TenantProperties properties, TenantValidator tenantValidator,
+                 @Value("${security.jwt.secret}") String jwtSecret) {
+        this.properties = properties;
+        this.tenantValidator = tenantValidator;
+        this.jwtSecret = jwtSecret;
+    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -42,18 +54,53 @@ class TenantFilter extends OncePerRequestFilter {
 
         var tenantId = resolveTenant(request);
 
-        if (tenantId == null || !tenantValidator.isActive(tenantId)) {
-            log.debug("Rejected request — could not resolve an active tenant");
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        if (tenantId != null && tenantValidator.isActive(tenantId)) {
+            TenantContext.setCurrentTenant(tenantId);
+            try {
+                chain.doFilter(request, response);
+            } finally {
+                TenantContext.clear();
+            }
             return;
         }
 
-        TenantContext.setCurrentTenant(tenantId);
-        try {
+        if (isSuperAdmin(request)) {
             chain.doFilter(request, response);
-        } finally {
-            TenantContext.clear();
+            return;
         }
+
+        log.debug("Rejected request — could not resolve an active tenant");
+        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+    }
+
+    private boolean isSuperAdmin(HttpServletRequest request) {
+        var token = extractAccessToken(request);
+        if (token == null) {
+            return false;
+        }
+        try {
+            var key = new SecretKeySpec(
+                    jwtSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            var claims = Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return "SUPER_ADMIN".equals(claims.get("role", String.class));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private String extractAccessToken(HttpServletRequest request) {
+        if (request.getCookies() == null) {
+            return null;
+        }
+        return Arrays.stream(request.getCookies())
+                .filter(c -> "access_token".equals(c.getName()))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElse(null);
     }
 
     private String resolveTenant(HttpServletRequest request) {
