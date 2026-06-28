@@ -1,4 +1,4 @@
-package br.com.toponesystem.thirdsector.municipality.adapter.in.seed;
+package br.com.toponesystem.thirdsector.bootstrap;
 
 import br.com.toponesystem.thirdsector.auth.application.usecase.CreateSuperAdminCommand;
 import br.com.toponesystem.thirdsector.auth.application.usecase.CreateSuperAdminUseCase;
