@@ -1,8 +1,11 @@
 package br.com.toponesystem.thirdsector.municipality.adapter.in.seed;
 
+import br.com.toponesystem.thirdsector.auth.application.usecase.CreateSuperAdminCommand;
+import br.com.toponesystem.thirdsector.auth.application.usecase.CreateSuperAdminUseCase;
 import br.com.toponesystem.thirdsector.auth.application.usecase.CreateUserCommand;
 import br.com.toponesystem.thirdsector.auth.application.usecase.CreateUserUseCase;
 import br.com.toponesystem.thirdsector.auth.domain.exception.DuplicateEmailException;
+import br.com.toponesystem.thirdsector.auth.domain.exception.DuplicateSuperAdminEmailException;
 import br.com.toponesystem.thirdsector.auth.domain.model.Role;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityCommand;
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityUseCase;
@@ -36,6 +39,9 @@ class DevDataSeeder implements CommandLineRunner {
     private static final String DEV_ORG_CNPJ = "12345678000195";
     private static final String DEV_MGR_EMAIL = "manager@dev.local";
     private static final String DEV_MGR_PASSWORD = "ManagerDev1";
+    private static final String DEV_SUPER_ADMIN_NAME = "Super Admin (Dev)";
+    private static final String DEV_SUPER_ADMIN_EMAIL = "superadmin@dev.local";
+    private static final String DEV_SUPER_ADMIN_PASSWORD = "SuperAdminDev1";
 
     private UUID devOrganizationId;
 
@@ -43,16 +49,30 @@ class DevDataSeeder implements CommandLineRunner {
     private final TenantMigrationService tenantMigrationService;
     private final CreateUserUseCase createUserUseCase;
     private final CreateOrganizationUseCase createOrganizationUseCase;
+    private final CreateSuperAdminUseCase createSuperAdminUseCase;
     private final PlanRepository planRepository;
 
     @Override
     public void run(String... args) {
+        seedSuperAdmin();
         seedMunicipality();
         seedMunicipalityAdmin();
         seedOrganization();
         seedOrganizationManager();
         TenantContext.clear();
-        log.info("Dev seed completed — tenant '{}' ready with adm, org and manager", DEV_SUBDOMAIN);
+        log.info("Dev seed completed — tenant '{}' ready with adm, org, manager and super admin", DEV_SUBDOMAIN);
+    }
+
+    private void seedSuperAdmin() {
+        log.info("Seeding SUPER_ADMIN '{}'", DEV_SUPER_ADMIN_EMAIL);
+        try {
+            createSuperAdminUseCase.executeWithPassword(
+                    new CreateSuperAdminCommand(DEV_SUPER_ADMIN_NAME, DEV_SUPER_ADMIN_EMAIL),
+                    DEV_SUPER_ADMIN_PASSWORD);
+            log.info("SUPER_ADMIN '{}' created", DEV_SUPER_ADMIN_EMAIL);
+        } catch (DuplicateSuperAdminEmailException e) {
+            log.info("SUPER_ADMIN '{}' already exists", DEV_SUPER_ADMIN_EMAIL);
+        }
     }
 
     private void seedMunicipality() {

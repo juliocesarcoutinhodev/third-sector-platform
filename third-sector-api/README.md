@@ -319,9 +319,10 @@ Ao subir com profile `dev`, o `DevDataSeeder` cria automaticamente:
 | Município | subdomínio `maringa` | CNPJ `11222333000181`, plano BASIC |
 | ADM da Prefeitura | `admin@dev.local` | Senha `AdminDev1`, role `MUNICIPALITY_ADM` |
 | Organização | CNPJ `12345678000195` | "Organização de Teste (Dev)" |
-| Gestor da Organização | `manager@dev.local` | Senha `ManagerDev1`, role `ORGANIZATION_MANAGER` |
+|| Gestor da Organização | `manager@dev.local` | Senha `ManagerDev1`, role `ORGANIZATION_MANAGER` |
+|| Super Admin | `superadmin@dev.local` | Senha `SuperAdminDev1`, role `SUPER_ADMIN` |
 
-**Ordem de criação:** município → migration do schema → ADM → organização → gestor.
+**Ordem de criação:** super admin → município → migration do schema → ADM → organização → gestor.
 **Idempotente:** reiniciar a aplicação não duplica registros.
 
 As credenciais estão disponíveis como variáveis de collection no Postman (`adminEmail`, `adminPassword`, `managerEmail`, `managerPassword`).
@@ -355,6 +356,35 @@ A API lê as variáveis automaticamente de `../infra/.env` no perfil `dev`
 ```
 
 A aplicação sobe em `http://localhost:8080` com o perfil `dev`.
+
+### Criar Super Admin (produção)
+
+A criação de Super Admin é feita exclusivamente via linha de comando — **não há endpoint HTTP** para esta operação.
+Consulte o [ADR-001](docs/adr/001-super-admin-cli.md) para o racional de segurança.
+
+```bash
+java -jar target/third-sector-api-0.0.3.jar --create-super-admin --name="Admin" --email=admin@exemplo.com
+```
+
+A senha temporária (16 caracteres, gerada criptograficamente) será exibida **uma única vez** no console.
+Copie-a imediatamente e troque-a no primeiro login.
+
+O comando é idempotente por email — se o Super Admin já existir, o comando apenas informa e não gera nova senha.
+
+```bash
+# Exemplo da saída:
+# ============================================
+#   SUPER ADMIN CRIADO COM SUCESSO
+#   ----------------------------------------
+#   Nome:  Admin
+#   Email: admin@exemplo.com
+#   Senha temporaria: aB3$xK9!mN2#qW5@
+#   ----------------------------------------
+#   IMPORTANTE: Esta senha sera exibida
+#   apenas esta unica vez. Copie-a agora.
+#   Troque a senha no primeiro login.
+# ============================================
+```
 
 ## Perfis
 
