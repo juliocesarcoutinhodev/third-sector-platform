@@ -7,7 +7,7 @@ import br.com.toponesystem.thirdsector.municipality.domain.port.out.Municipality
 import br.com.toponesystem.thirdsector.notification.domain.model.EmailNotification;
 import br.com.toponesystem.thirdsector.notification.domain.port.out.EmailSender;
 import br.com.toponesystem.thirdsector.notification.domain.port.out.NotificationPublisher;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
+import br.com.toponesystem.thirdsector.shared.domain.TenantContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

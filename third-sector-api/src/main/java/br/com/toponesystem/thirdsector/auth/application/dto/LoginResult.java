@@ -8,5 +8,6 @@ public record LoginResult(
         String email,
         String role,
         String tenantId,
-        UUID organizationId
+        UUID organizationId,
+        boolean mustChangePassword
 ) {}

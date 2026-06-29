@@ -34,10 +34,7 @@ public class ConfirmPasswordResetUseCase {
                 .orElseThrow(InvalidPasswordResetTokenException::new);
 
         var encodedPassword = passwordEncoder.encode(command.newPassword());
-        var updatedUser = new br.com.toponesystem.thirdsector.auth.domain.model.User(
-                user.getId(), user.getName(), user.getEmail(), encodedPassword,
-                user.getRole(), user.getOrganizationId(), user.isActive(),
-                user.getCreatedAt(), java.time.Instant.now());
+        var updatedUser = user.withPasswordChanged(encodedPassword);
         userRepository.save(updatedUser);
 
         passwordResetTokenRepository.invalidateByUserId(user.getId());

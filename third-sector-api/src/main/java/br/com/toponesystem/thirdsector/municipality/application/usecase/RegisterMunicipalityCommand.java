@@ -7,5 +7,7 @@ public record RegisterMunicipalityCommand(
         String cnpj,
         String subdomain,
         UUID planId,
-        String logo
+        String logo,
+        String adminName,
+        String adminEmail
 ) {}

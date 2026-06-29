@@ -353,6 +353,82 @@
               "body": "{\n  \"success\": false,\n  \"status\": 422,\n  \"error\": \"Unprocessable Entity\",\n  \"message\": \"E-mail ou senha inválidos.\",\n  \"timestamp\": \"2026-06-28T12:00:00Z\"\n}"
             }
           ]
+        },
+        {
+          "name": "POST - Force Password Change",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"mustChangePassword false\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.data.mustChangePassword).to.be.false;",
+                  "});",
+                  "pm.test(\"Cookies access_token e refresh_token setados\", () => {",
+                  "    const cookies = pm.response.headers.get(\"Set-Cookie\");",
+                  "    pm.expect(cookies).to.include(\"access_token\");",
+                  "    pm.expect(cookies).to.include(\"refresh_token\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Host",
+                "value": "{{tenantSubdomain}}.thirdsector.com.br"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newPassword\": \"NovaSenha1@\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/force-password-change",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "force-password-change"
+              ]
+            },
+            "description": "Troca a senha temporária do admin municipal provisionado automaticamente. Requer cookie access_token com escopo restrito (obtido no login com mustChangePassword: true). Após a troca, emite token de acesso completo com refresh token."
+          },
+          "response": [
+            {
+              "name": "Success - 200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Set-Cookie",
+                  "value": "access_token=eyJ...; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=900"
+                },
+                {
+                  "key": "Set-Cookie",
+                  "value": "refresh_token=abc123...; HttpOnly; Secure; SameSite=Lax; Path=/api/auth/refresh; Max-Age=604800"
+                }
+              ],
+              "body": "{\"success\":true,\"message\":\"Senha alterada com sucesso. Acesso completo liberado.\",\"data\":{\"userId\":\"...\",\"name\":\"Admin Municipal\",\"email\":\"admin@municipio.com\",\"role\":\"MUNICIPALITY_ADM\",\"mustChangePassword\":false}}"
+            },
+            {
+              "name": "Error - 403 Token nao restrito",
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\"success\":false,\"status\":403,\"error\":\"Forbidden\",\"message\":\"Acesso negado.\",\"timestamp\":\"2026-06-29T00:00:00Z\"}"
+            }
+          ]
         }
       ]
     },

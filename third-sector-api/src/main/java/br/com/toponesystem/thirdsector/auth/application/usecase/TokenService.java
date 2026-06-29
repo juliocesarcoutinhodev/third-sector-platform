@@ -34,6 +34,12 @@ public class TokenService {
 
     @Transactional
     public TokenPair createTokenPair(LoginResult loginResult) {
+        if (loginResult.mustChangePassword()) {
+            var accessToken = jwtTokenGenerator.generateForPasswordChange(
+                    loginResult.userId(), loginResult.role(), loginResult.tenantId());
+            return new TokenPair(accessToken, null);
+        }
+
         var accessToken = jwtTokenGenerator.generate(
                 loginResult.userId(), loginResult.role(),
                 loginResult.tenantId(), loginResult.organizationId());

@@ -39,7 +39,7 @@ class MunicipalityServiceTest extends AbstractIntegrationTest {
     void registersNewMunicipality() {
         var planId = planFixtures.basicPlanId();
         var view = registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Maringá", CNPJ_MARINGA, "maringa-test", planId, null));
+                "Maringá", CNPJ_MARINGA, "maringa-test", planId, null, "Admin", "adm@test.com"));
 
         assertThat(view.id()).isNotNull();
         assertThat(view.subdomain()).isEqualTo("maringa-test");
@@ -51,7 +51,7 @@ class MunicipalityServiceTest extends AbstractIntegrationTest {
     void stripsCnpjMaskOnRegister() {
         var planId = planFixtures.enterprisePlanId();
         var view = registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Curitiba", "43.773.954/0001-40", "curitiba-test", planId, null));
+                "Curitiba", "43.773.954/0001-40", "curitiba-test", planId, null, "Admin", "adm@test.com"));
 
         assertThat(view.cnpj()).isEqualTo(CNPJ_CURITIBA);
     }
@@ -61,11 +61,11 @@ class MunicipalityServiceTest extends AbstractIntegrationTest {
         var intermediateId = planFixtures.intermediatePlanId();
         var basicId = planFixtures.basicPlanId();
         registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Londrina", CNPJ_LONDRINA, "londrina-test", intermediateId, null));
+                "Londrina", CNPJ_LONDRINA, "londrina-test", intermediateId, null, "Admin", "adm@test.com"));
 
         assertThatThrownBy(() ->
                 registerUseCase.execute(new RegisterMunicipalityCommand(
-                        "Londrina 2", CNPJ_LONDRINA2, "londrina-test", basicId, null))
+                        "Londrina 2", CNPJ_LONDRINA2, "londrina-test", basicId, null, "Admin", "adm@test.com"))
         ).isInstanceOf(DuplicateSubdomainException.class)
                 .hasMessageContaining("londrina-test");
     }
@@ -74,7 +74,7 @@ class MunicipalityServiceTest extends AbstractIntegrationTest {
     void findsBySubdomain() {
         var planId = planFixtures.basicPlanId();
         registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Cascavel", CNPJ_CASCAVEL, "cascavel-test", planId, null));
+                "Cascavel", CNPJ_CASCAVEL, "cascavel-test", planId, null, "Admin", "adm@test.com"));
 
         MunicipalityView found = findBySubdomainUseCase.execute("cascavel-test");
 
@@ -93,7 +93,7 @@ class MunicipalityServiceTest extends AbstractIntegrationTest {
         int before = listActiveUseCase.execute().size();
         var planId = planFixtures.intermediatePlanId();
         registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Londrina Norte", CNPJ_LONDRINA2, "londrina-norte-test", planId, null));
+                "Londrina Norte", CNPJ_LONDRINA2, "londrina-norte-test", planId, null, "Admin", "adm@test.com"));
 
         assertThat(listActiveUseCase.execute()).hasSizeGreaterThan(before);
     }

@@ -30,6 +30,6 @@ public class SuperAdminLoginUseCase {
 
         return new LoginResult(
                 superAdmin.getId(), superAdmin.getName(), superAdmin.getEmail(),
-                "SUPER_ADMIN", null, null);
+                "SUPER_ADMIN", null, null, false);
     }
 }

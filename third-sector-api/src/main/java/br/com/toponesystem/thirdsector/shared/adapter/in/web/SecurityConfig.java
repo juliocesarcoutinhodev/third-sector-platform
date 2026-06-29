@@ -3,6 +3,7 @@ package br.com.toponesystem.thirdsector.shared.adapter.in.web;
 import br.com.toponesystem.thirdsector.auth.adapter.out.security.JwtProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -26,7 +27,18 @@ public class SecurityConfig {
                                 "/api/auth/password-reset/**").permitAll()
                         .requestMatchers("/api/auth/super-admin/**").permitAll()
                         .requestMatchers("/actuator/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/auth/force-password-change").hasRole("FORCE_PASSWORD_CHANGE")
+                        // Tokens com scope PASSWORD_CHANGE_REQUIRED só podem acessar o endpoint acima.
+                        // Qualquer outro endpoint autenticado rejeita esse token.
+                        .anyRequest().access((authSupplier, object) -> {
+                            var principal = authSupplier.get();
+                            if (!principal.isAuthenticated()) {
+                                return new AuthorizationDecision(false);
+                            }
+                            boolean isRestricted = principal.getAuthorities().stream()
+                                    .anyMatch(a -> "ROLE_FORCE_PASSWORD_CHANGE".equals(a.getAuthority()));
+                            return new AuthorizationDecision(!isRestricted);
+                        })
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtProperties),
                         UsernamePasswordAuthenticationFilter.class)

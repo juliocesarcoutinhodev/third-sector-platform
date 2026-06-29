@@ -1,7 +1,7 @@
 package br.com.toponesystem.thirdsector.tenant.adapter.out.persistence;
 
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
-import br.com.toponesystem.thirdsector.tenant.domain.exception.TenantContextNotSetException;
+import br.com.toponesystem.thirdsector.shared.domain.TenantContext;
+import br.com.toponesystem.thirdsector.shared.domain.exception.TenantContextNotSetException;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.springframework.stereotype.Component;
 

@@ -1,7 +1,7 @@
 package br.com.toponesystem.thirdsector.tenant.adapter.in.api;
 
 import br.com.toponesystem.thirdsector.tenant.application.api.TenantProvider;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
+import br.com.toponesystem.thirdsector.shared.domain.TenantContext;
 import org.springframework.stereotype.Component;
 
 @Component

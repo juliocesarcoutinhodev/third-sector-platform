@@ -84,7 +84,7 @@ class UserTest {
     @Test
     void hydrationConstructorRebuildsFromPersistence() {
         var hydrated = new User(UUID.fromString("00000000-0000-0000-0000-000000000001"), "Name", "email@example.com", "hash", Role.MUNICIPALITY_ADM,
-                null, true, java.time.Instant.EPOCH, java.time.Instant.EPOCH);
+                null, true, java.time.Instant.EPOCH, java.time.Instant.EPOCH, false);
 
         assertThat(hydrated.getId()).isEqualTo(UUID.fromString("00000000-0000-0000-0000-000000000001"));
         assertThat(hydrated.getEmail()).isEqualTo("email@example.com");
@@ -96,7 +96,7 @@ class UserTest {
     void factoryMethodDoesNotValidateOnHydrationConstructor() {
         assertThatCode(() ->
                 new User(UUID.fromString("00000000-0000-0000-0000-000000000001"), "Name", "email@example.com", "hash", Role.SUPER_ADMIN,
-                        UUID.fromString("00000000-0000-0000-0000-000000000005"), true, java.time.Instant.EPOCH, java.time.Instant.EPOCH)
+                        UUID.fromString("00000000-0000-0000-0000-000000000005"), true, java.time.Instant.EPOCH, java.time.Instant.EPOCH, false)
         ).doesNotThrowAnyException();
     }
 }

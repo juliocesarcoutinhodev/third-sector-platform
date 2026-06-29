@@ -11,7 +11,7 @@ import br.com.toponesystem.thirdsector.organization.domain.port.out.Organization
 import br.com.toponesystem.thirdsector.plan.application.usecase.UpdatePlanCommand;
 import br.com.toponesystem.thirdsector.plan.application.usecase.UpdatePlanUseCase;
 import br.com.toponesystem.thirdsector.tenant.adapter.out.migration.TenantMigrationService;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
+import br.com.toponesystem.thirdsector.shared.domain.TenantContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -61,11 +61,14 @@ class OrganizationLimitIntegrationTest extends AbstractIntegrationTest {
         var enterpriseId = planFixtures.enterprisePlanId();
 
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "Limit Tenant", validCnpj(1), LIMITED_TENANT, basicId, null));
+                "Limit Tenant", validCnpj(1), LIMITED_TENANT, basicId, null,
+                "Admin", "adm@test.com"));
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "Unlimited Tenant", validCnpj(2), UNLIMITED_TENANT, enterpriseId, null));
+                "Unlimited Tenant", validCnpj(2), UNLIMITED_TENANT, enterpriseId, null,
+                "Admin", "adm@test.com"));
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "Retroactive Tenant", validCnpj(3), RETROACTIVE_TENANT, basicId, null));
+                "Retroactive Tenant", validCnpj(3), RETROACTIVE_TENANT, basicId, null,
+                "Admin", "adm@test.com"));
 
         migrationService.migrate(LIMITED_TENANT);
         migrationService.migrate(UNLIMITED_TENANT);

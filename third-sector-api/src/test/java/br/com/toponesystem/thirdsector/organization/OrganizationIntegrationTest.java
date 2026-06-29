@@ -9,7 +9,7 @@ import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOr
 import br.com.toponesystem.thirdsector.organization.domain.exception.DuplicateCnpjException;
 import br.com.toponesystem.thirdsector.organization.domain.model.OrganizationStatus;
 import br.com.toponesystem.thirdsector.tenant.adapter.out.migration.TenantMigrationService;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
+import br.com.toponesystem.thirdsector.shared.domain.TenantContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -42,9 +42,11 @@ class OrganizationIntegrationTest extends AbstractIntegrationTest {
     void setUpTenants() {
         var planId = planFixtures.enterprisePlanId();
         registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Org Tenant X", validCnpj(System.nanoTime()), TENANT_X, planId, null));
+                "Org Tenant X", validCnpj(System.nanoTime()), TENANT_X, planId, null,
+                "Admin", "adm@test.com"));
         registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Org Tenant Y", validCnpj(System.nanoTime()), TENANT_Y, planId, null));
+                "Org Tenant Y", validCnpj(System.nanoTime()), TENANT_Y, planId, null,
+                "Admin", "adm@test.com"));
 
         migrationService.migrate(TENANT_X);
         migrationService.migrate(TENANT_Y);

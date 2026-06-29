@@ -14,7 +14,7 @@ import br.com.toponesystem.thirdsector.municipality.application.usecase.Register
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationCommand;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationUseCase;
 import br.com.toponesystem.thirdsector.tenant.adapter.out.migration.TenantMigrationService;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
+import br.com.toponesystem.thirdsector.shared.domain.TenantContext;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,7 +79,7 @@ class PasswordResetIntegrationTest extends AbstractIntegrationTest {
     void setUpTenant() {
         var planId = planFixtures.enterprisePlanId();
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "PwdReset Tenant", "12121212000106", TENANT, planId, null));
+                "PwdReset Tenant", "12121212000106", TENANT, planId, null, "Admin", "adm@test.com"));
         migrationService.migrate(TENANT);
         TenantContext.setCurrentTenant(TENANT);
         createOrganization.execute(new CreateOrganizationCommand("PwdReset ONG", "12345678000195"));

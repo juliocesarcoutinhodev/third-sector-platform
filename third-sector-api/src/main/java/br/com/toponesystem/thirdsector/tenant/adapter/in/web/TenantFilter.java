@@ -1,7 +1,7 @@
 package br.com.toponesystem.thirdsector.tenant.adapter.in.web;
 
 import br.com.toponesystem.thirdsector.tenant.config.TenantProperties;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
+import br.com.toponesystem.thirdsector.shared.domain.TenantContext;
 import br.com.toponesystem.thirdsector.tenant.domain.port.out.TenantValidator;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.FilterChain;

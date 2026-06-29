@@ -14,6 +14,9 @@ import java.util.UUID;
 @Component
 class JjwtTokenGenerator implements JwtTokenGenerator {
 
+    static final String SCOPE_FULL = "FULL";
+    static final String SCOPE_PASSWORD_CHANGE_REQUIRED = "PASSWORD_CHANGE_REQUIRED";
+
     private final JwtProperties properties;
     private final SecretKey signingKey;
 
@@ -32,6 +35,7 @@ class JjwtTokenGenerator implements JwtTokenGenerator {
                 .subject(userId.toString())
                 .claim("role", role)
                 .claim("tenantId", tenantId)
+                .claim("scope", SCOPE_FULL)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(properties.expiration())));
 
@@ -40,5 +44,20 @@ class JjwtTokenGenerator implements JwtTokenGenerator {
         }
 
         return builder.signWith(signingKey).compact();
+    }
+
+    @Override
+    public String generateForPasswordChange(UUID userId, String role, String tenantId) {
+        var now = Instant.now();
+
+        return Jwts.builder()
+                .subject(userId.toString())
+                .claim("role", role)
+                .claim("tenantId", tenantId)
+                .claim("scope", SCOPE_PASSWORD_CHANGE_REQUIRED)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(properties.expiration())))
+                .signWith(signingKey)
+                .compact();
     }
 }

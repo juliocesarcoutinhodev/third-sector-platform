@@ -2,7 +2,7 @@ package br.com.toponesystem.thirdsector.auth.application.usecase;
 
 import java.security.SecureRandom;
 
-final class SecurePasswordGenerator {
+public final class SecurePasswordGenerator {
 
     private static final String UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final String LOWER = "abcdefghijklmnopqrstuvwxyz";
@@ -14,7 +14,7 @@ final class SecurePasswordGenerator {
 
     private SecurePasswordGenerator() {}
 
-    static String generate() {
+    public static String generate() {
         var password = new char[LENGTH];
 
         password[0] = UPPER.charAt(SECURE_RANDOM.nextInt(UPPER.length()));

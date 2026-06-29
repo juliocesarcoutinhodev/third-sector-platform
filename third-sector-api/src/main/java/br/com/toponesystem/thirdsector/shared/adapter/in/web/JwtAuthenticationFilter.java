@@ -22,6 +22,7 @@ import java.util.UUID;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final String SCOPE_PASSWORD_CHANGE_REQUIRED = "PASSWORD_CHANGE_REQUIRED";
 
     private final JwtProperties jwtProperties;
 
@@ -40,10 +41,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 var userId = UUID.fromString(claims.getSubject());
                 var role = claims.get("role", String.class);
                 var tenantId = claims.get("tenantId", String.class);
-                var orgIdStr = claims.get("organizationId", String.class);
-                var organizationId = orgIdStr != null ? UUID.fromString(orgIdStr) : null;
+                var scope = claims.get("scope", String.class);
 
-                var auth = new TenantAuthenticationToken(userId, role, tenantId, organizationId);
+                TenantAuthenticationToken auth;
+                if (SCOPE_PASSWORD_CHANGE_REQUIRED.equals(scope)) {
+                    auth = TenantAuthenticationToken.forPasswordChange(userId, role, tenantId);
+                } else {
+                    var orgIdStr = claims.get("organizationId", String.class);
+                    var organizationId = orgIdStr != null ? UUID.fromString(orgIdStr) : null;
+                    auth = new TenantAuthenticationToken(userId, role, tenantId, organizationId);
+                }
+
                 SecurityContextHolder.getContext().setAuthentication(auth);
             } catch (Exception e) {
                 log.debug("JWT validation failed: {}", e.getMessage());

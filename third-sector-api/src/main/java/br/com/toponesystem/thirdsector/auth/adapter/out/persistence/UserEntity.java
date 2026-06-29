@@ -64,6 +64,9 @@ class UserEntity {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @Column(nullable = false)
+    private boolean mustChangePassword;
+
     @PreUpdate
     void onUpdate() {
         this.updatedAt = Instant.now();

@@ -13,7 +13,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 
 import br.com.toponesystem.thirdsector.AbstractIntegrationTest;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
+import br.com.toponesystem.thirdsector.shared.domain.TenantContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

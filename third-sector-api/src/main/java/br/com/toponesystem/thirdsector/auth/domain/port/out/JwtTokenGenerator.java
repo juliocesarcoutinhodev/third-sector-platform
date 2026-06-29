@@ -5,4 +5,6 @@ import java.util.UUID;
 public interface JwtTokenGenerator {
 
     String generate(UUID userId, String role, String tenantId, UUID organizationId);
+
+    String generateForPasswordChange(UUID userId, String role, String tenantId);
 }

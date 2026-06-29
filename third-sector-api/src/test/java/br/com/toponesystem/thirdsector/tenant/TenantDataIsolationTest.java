@@ -6,7 +6,7 @@ import br.com.toponesystem.thirdsector.municipality.application.usecase.Register
 import br.com.toponesystem.thirdsector.municipality.application.usecase.RegisterMunicipalityUseCase;
 import br.com.toponesystem.thirdsector.tenant.adapter.out.migration.TenantMigrationService;
 import br.com.toponesystem.thirdsector.tenant.adapter.out.persistence.IsolationRecordRepository;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
+import br.com.toponesystem.thirdsector.shared.domain.TenantContext;
 import br.com.toponesystem.thirdsector.tenant.domain.model.IsolationRecord;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,9 +47,9 @@ class TenantDataIsolationTest extends AbstractIntegrationTest {
     void setUpTenants() {
         var planId = planFixtures.enterprisePlanId();
         registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Alpha Municipality", CNPJ_A, TENANT_A, planId, null));
+                "Alpha Municipality", CNPJ_A, TENANT_A, planId, null, "Admin", "adm@test.com"));
         registerUseCase.execute(new RegisterMunicipalityCommand(
-                "Beta Municipality", CNPJ_B, TENANT_B, planId, null));
+                "Beta Municipality", CNPJ_B, TENANT_B, planId, null, "Admin", "adm@test.com"));
 
         migrationService.migrate(TENANT_A);
         migrationService.migrate(TENANT_B);

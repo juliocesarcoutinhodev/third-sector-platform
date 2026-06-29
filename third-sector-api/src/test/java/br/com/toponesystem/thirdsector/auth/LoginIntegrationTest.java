@@ -13,7 +13,7 @@ import br.com.toponesystem.thirdsector.municipality.application.usecase.Register
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationCommand;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationUseCase;
 import br.com.toponesystem.thirdsector.tenant.adapter.out.migration.TenantMigrationService;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
+import br.com.toponesystem.thirdsector.shared.domain.TenantContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -68,7 +68,7 @@ class LoginIntegrationTest extends AbstractIntegrationTest {
     void setUpTenant() {
         var planId = planFixtures.enterprisePlanId();
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "Login Test Tenant", "66666666000191", TENANT, planId, null));
+                "Login Test Tenant", "66666666000191", TENANT, planId, null, "Admin", "adm@test.com"));
         migrationService.migrate(TENANT);
         TenantContext.setCurrentTenant(TENANT);
         createOrganization.execute(new CreateOrganizationCommand("Login ONG", "12345678000195"));

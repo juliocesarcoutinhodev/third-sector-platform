@@ -2,13 +2,16 @@ package br.com.toponesystem.thirdsector.auth.adapter.in.web;
 
 import br.com.toponesystem.thirdsector.auth.adapter.out.security.JwtProperties;
 import br.com.toponesystem.thirdsector.auth.application.usecase.RefreshTokenProperties;
+import br.com.toponesystem.thirdsector.auth.application.usecase.TokenPair;
 import br.com.toponesystem.thirdsector.auth.domain.exception.InvalidRefreshTokenException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @Component
 class AuthCookieManager {
@@ -22,6 +25,15 @@ class AuthCookieManager {
     AuthCookieManager(JwtProperties jwtProperties, RefreshTokenProperties refreshTokenProperties) {
         this.jwtProperties = jwtProperties;
         this.refreshTokenProperties = refreshTokenProperties;
+    }
+
+    List<String> buildTokenCookieHeaders(TokenPair tokenPair) {
+        var headers = new ArrayList<String>();
+        headers.add(buildAccessCookie(tokenPair.accessToken()).toString());
+        if (tokenPair.refreshToken() != null) {
+            headers.add(buildRefreshCookie(tokenPair.refreshToken()).toString());
+        }
+        return headers;
     }
 
     ResponseCookie buildAccessCookie(String token) {

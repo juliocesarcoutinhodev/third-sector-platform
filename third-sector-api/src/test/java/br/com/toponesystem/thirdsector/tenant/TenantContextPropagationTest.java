@@ -1,7 +1,7 @@
 package br.com.toponesystem.thirdsector.tenant;
 
 import br.com.toponesystem.thirdsector.AbstractIntegrationTest;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
+import br.com.toponesystem.thirdsector.shared.domain.TenantContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -6,7 +6,7 @@ import br.com.toponesystem.thirdsector.organization.domain.exception.Organizatio
 import br.com.toponesystem.thirdsector.organization.domain.model.Organization;
 import br.com.toponesystem.thirdsector.organization.domain.port.out.OrganizationRepository;
 import br.com.toponesystem.thirdsector.plan.domain.port.out.PlanRepository;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
+import br.com.toponesystem.thirdsector.shared.domain.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

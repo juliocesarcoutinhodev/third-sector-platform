@@ -2,8 +2,8 @@ package br.com.toponesystem.thirdsector.auth.application.usecase;
 
 import br.com.toponesystem.thirdsector.auth.application.dto.LoginResult;
 import br.com.toponesystem.thirdsector.auth.domain.exception.AuthenticationFailedException;
+import br.com.toponesystem.thirdsector.auth.domain.port.out.RefreshTokenRepository;
 import br.com.toponesystem.thirdsector.auth.domain.port.out.UserRepository;
-import br.com.toponesystem.thirdsector.tenant.application.api.TenantProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -11,28 +11,28 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
-public class LoginUseCase {
+public class ForcePasswordChangeUseCase {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final TenantProvider tenantProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    @Transactional(readOnly = true)
-    public LoginResult execute(LoginCommand command) {
-        var user = userRepository.findByEmail(command.email())
+    @Transactional
+    public LoginResult execute(ForcePasswordChangeCommand command) {
+        var user = userRepository.findById(command.userId())
                 .orElseThrow(AuthenticationFailedException::new);
 
-        if (!user.isActive()) {
+        if (!user.isMustChangePassword()) {
             throw new AuthenticationFailedException();
         }
 
-        if (!passwordEncoder.matches(command.password(), user.getPasswordHash())) {
-            throw new AuthenticationFailedException();
-        }
+        var encodedPassword = passwordEncoder.encode(command.newPassword());
+        var updatedUser = user.withPasswordChanged(encodedPassword);
+        userRepository.save(updatedUser);
 
-        return new LoginResult(
-                user.getId(), user.getName(), user.getEmail(),
-                user.getRole().name(), tenantProvider.currentTenant(),
-                user.getOrganizationId(), user.isMustChangePassword());
+        refreshTokenRepository.revokeByUserId(user.getId());
+
+        return new LoginResult(user.getId(), user.getName(), user.getEmail(),
+                user.getRole().name(), command.tenantId(), user.getOrganizationId(), false);
     }
 }

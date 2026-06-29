@@ -18,15 +18,28 @@ public class User {
     private boolean active;
     private Instant createdAt;
     private Instant updatedAt;
+    private boolean mustChangePassword;
 
     public static User create(String name, String email, String passwordHash,
                                Role role, UUID organizationId) {
         validateRoleOrganizationBinding(role, organizationId);
-        return new User(name, email, passwordHash, role, organizationId);
+        return new User(name, email, passwordHash, role, organizationId, false);
+    }
+
+    public static User createWithTemporaryPassword(String name, String email,
+                                                    String passwordHash, Role role) {
+        validateRoleOrganizationBinding(role, null);
+        return new User(name, email, passwordHash, role, null, true);
+    }
+
+    public User withPasswordChanged(String newPasswordHash) {
+        return new User(id, name, email, newPasswordHash, role,
+                organizationId, active, createdAt, Instant.now(), false);
     }
 
     public User(UUID id, String name, String email, String passwordHash, Role role,
-                UUID organizationId, boolean active, Instant createdAt, Instant updatedAt) {
+                UUID organizationId, boolean active, Instant createdAt, Instant updatedAt,
+                boolean mustChangePassword) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -36,9 +49,11 @@ public class User {
         this.active = active;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.mustChangePassword = mustChangePassword;
     }
 
-    private User(String name, String email, String passwordHash, Role role, UUID organizationId) {
+    private User(String name, String email, String passwordHash, Role role,
+                 UUID organizationId, boolean mustChangePassword) {
         this.name = name;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -47,6 +62,7 @@ public class User {
         this.active = true;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
+        this.mustChangePassword = mustChangePassword;
     }
 
     private static void validateRoleOrganizationBinding(Role role, UUID organizationId) {

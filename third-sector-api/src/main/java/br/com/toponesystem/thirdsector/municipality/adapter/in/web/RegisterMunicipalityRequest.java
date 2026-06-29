@@ -1,5 +1,6 @@
 package br.com.toponesystem.thirdsector.municipality.adapter.in.web;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -15,5 +16,7 @@ record RegisterMunicipalityRequest(
                 message = "Subdomain must contain only lowercase letters, numbers, and hyphens")
         String subdomain,
         @NotNull UUID planId,
-        String logo
+        String logo,
+        @NotBlank String adminName,
+        @Email @NotBlank String adminEmail
 ) {}

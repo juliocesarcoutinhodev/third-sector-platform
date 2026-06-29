@@ -1,7 +1,7 @@
 package br.com.toponesystem.thirdsector.tenant;
 
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
-import br.com.toponesystem.thirdsector.tenant.domain.exception.TenantContextNotSetException;
+import br.com.toponesystem.thirdsector.shared.domain.TenantContext;
+import br.com.toponesystem.thirdsector.shared.domain.exception.TenantContextNotSetException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;

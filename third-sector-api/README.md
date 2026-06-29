@@ -216,6 +216,7 @@ reconstruir qualquer estado vindo da persistência.
 | `POST` | `/api/users` | Cadastro de usuário (BCrypt, evento `UserRegisteredEvent`) |
 | `POST` | `/api/auth/login` | Login (200 + `ApiResponse<LoginResponse>` + cookies) |
 | `POST` | `/api/auth/super-admin/login` | Login Super Admin (200 + `ApiResponse<LoginResponse>` + cookie, sem refresh token) |
+| `POST` | `/api/auth/force-password-change` | Troca senha temporária — requer token restrito (200 + cookies completos) |
 | `POST` | `/api/auth/refresh` | Rotation (200 + `ApiResponse<LoginResponse>` + cookies) |
 | `POST` | `/api/auth/logout` | Logout (204 No Content, limpa cookies, idempotente) |
 | `POST` | `/api/auth/password-reset/request` | Solicita redefinição (200, resposta idêntica exista ou não) |
@@ -253,6 +254,23 @@ reconstruir qualquer estado vindo da persistência.
   ORGANIZATION_MANAGER/OPERATOR restritos ao próprio organizationId
 - Erros: 401 Unauthorized (sem token), 403 Forbidden (sem permissão) — via `GlobalExceptionHandler`
 - Endpoints públicos: `/api/auth/**`, actuator, swagger — whitelistados no `SecurityConfig`
+
+**Primeiro acesso — Admin Municipal:**
+
+Ao registrar um município via `POST /api/municipalities`, um admin (`MUNICIPALITY_ADM`) é provisionado
+automaticamente no schema tenant com senha temporária gerada criptograficamente (16 chars) e
+`mustChangePassword: true`. O fluxo obrigatório de primeiro acesso é:
+
+1. **Login com senha temporária** → `POST /api/auth/login`
+   - Resposta: `mustChangePassword: true`, cookie `access_token` com escopo restrito (`ROLE_FORCE_PASSWORD_CHANGE`)
+   - **Sem** cookie `refresh_token` — sessão restrita não permite rotação
+2. **Trocar a senha** → `POST /api/auth/force-password-change` com o token restrito
+   - Body: `{"newPassword": "NovaSenha1@"}`
+   - Resposta: `mustChangePassword: false`, cookies completos (`access_token` + `refresh_token`)
+3. A partir daí o admin tem acesso normal ao seu tenant
+
+O token restrito é bloqueado pelo `SecurityConfig` para qualquer endpoint exceto `/api/auth/force-password-change`
+e `/api/auth/logout` — retorna 403 se tentar acessar recursos protegidos.
 
 **Password Reset:**
 - `POST /api/auth/password-reset/request`: resposta idêntica para email existente ou não (evita enumeração)
@@ -467,6 +485,7 @@ O schema do banco é versionado pelo Flyway. As migrations são separadas por es
 | V5 | Tabela `event_publication` — registro de eventos do Spring Modulith |
 | V6 | Tabela `refresh_token` — tokenHash SHA-256, revoked, familyId, índice em token_hash |
 | V7 | Tabela `password_reset_token` — tokenHash SHA-256, usado, userId, índice em token_hash |
+| V8 | Coluna `must_change_password` na tabela `users` — flag de troca obrigatória no primeiro acesso |
 
 No startup, o `TenantMigrationStartupRunner` aplica as migrations do master e depois
 itera sobre todos os municípios ativos aplicando as migrations nos schemas tenant.

@@ -10,7 +10,7 @@ import br.com.toponesystem.thirdsector.municipality.application.usecase.Register
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationCommand;
 import br.com.toponesystem.thirdsector.organization.application.usecase.CreateOrganizationUseCase;
 import br.com.toponesystem.thirdsector.tenant.adapter.out.migration.TenantMigrationService;
-import br.com.toponesystem.thirdsector.tenant.domain.TenantContext;
+import br.com.toponesystem.thirdsector.shared.domain.TenantContext;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -63,9 +63,9 @@ class AuthorizationIntegrationTest extends AbstractIntegrationTest {
     void setUpTenants() {
         var planId = planFixtures.enterprisePlanId();
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "Auth X", "77777777000191", TENANT_X, planId, null));
+                "Auth X", "77777777000191", TENANT_X, planId, null, "Admin", "adm@test.com"));
         registerMunicipality.execute(new RegisterMunicipalityCommand(
-                "Auth Y", "55555555000191", TENANT_Y, planId, null));
+                "Auth Y", "55555555000191", TENANT_Y, planId, null, "Admin", "adm@test.com"));
         migrationService.migrate(TENANT_X);
         migrationService.migrate(TENANT_Y);
 
